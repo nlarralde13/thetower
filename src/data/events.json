@@ -1,0 +1,99 @@
+[
+  {
+    "id": "roadside_wagon",
+    "name": "The Broken Wagon",
+    "areaId": "broken_wagon",
+    "description": "A shattered wagon sits half buried in tall grass.",
+    "choices": [
+      {
+        "id": "repair_wagon",
+        "text": "Use wood scraps to repair the wheel.",
+        "requirements": {
+          "items": [
+            {
+              "itemId": "wood_scraps",
+              "quantity": 2
+            }
+          ]
+        },
+        "outcome": {
+          "text": "The grateful merchant gives you a healing potion.",
+          "consumeItems": true,
+          "rewards": [
+            {
+              "itemId": "minor_healing_potion",
+              "quantity": 1
+            }
+          ]
+        }
+      },
+      {
+        "id": "search_roadside",
+        "text": "Search the roadside for anything useful.",
+        "outcome": {
+          "text": "You find a bent coin in the grass.",
+          "rewards": [
+            {
+              "itemId": "bent_copper_coin",
+              "quantity": 1
+            }
+          ]
+        }
+      }
+    ]
+  },
+  {
+    "id": "garden_whispers",
+    "name": "Whispers Under Glass",
+    "areaId": "whispering_gardens",
+    "description": "A cracked greenhouse repeats a phrase in a voice like rustling leaves.",
+    "choices": [
+      {
+        "id": "listen_closely",
+        "text": "Listen to the whisper.",
+        "outcome": {
+          "text": "The words lead you to a torn journal page.",
+          "rewards": [
+            {
+              "itemId": "gardeners_journal_page",
+              "quantity": 1
+            }
+          ]
+        }
+      },
+      {
+        "id": "leave_greenhouse",
+        "text": "Leave the greenhouse alone.",
+        "outcome": {
+          "text": "You return to the path without incident.",
+          "rewards": []
+        }
+      }
+    ]
+  },
+  {
+    "id": "lost_ranger_cache",
+    "name": "The Ranger's Cache",
+    "areaId": "deep_woods",
+    "description": "Old trail marks point toward a hollow sealed with thorny roots.",
+    "choices": [
+      {
+        "id": "clear_roots",
+        "text": "Cut through the roots.",
+        "outcome": {
+          "text": "Inside the hollow lies an old map and a pouch of seeds.",
+          "rewards": [
+            {
+              "itemId": "old_rangers_map",
+              "quantity": 1
+            },
+            {
+              "itemId": "moonbean_seeds",
+              "quantity": 2
+            }
+          ]
+        }
+      }
+    ]
+  }
+]

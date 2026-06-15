@@ -1,0 +1,74 @@
+[
+  {
+    "id": "brew_minor_healing_potion",
+    "name": "Brew Minor Healing Potion",
+    "category": "alchemy",
+    "requiredLevel": 1,
+    "ingredients": [
+      {
+        "itemId": "wild_herbs",
+        "quantity": 2
+      },
+      {
+        "itemId": "moonbean",
+        "quantity": 1
+      }
+    ],
+    "output": {
+      "itemId": "minor_healing_potion",
+      "quantity": 1
+    }
+  },
+  {
+    "id": "weave_linen_wrap",
+    "name": "Weave Linen Wrap",
+    "category": "tailoring",
+    "requiredLevel": 1,
+    "ingredients": [
+      {
+        "itemId": "flax_fiber",
+        "quantity": 4
+      }
+    ],
+    "output": {
+      "itemId": "linen_wrap",
+      "quantity": 1
+    }
+  },
+  {
+    "id": "repair_leather_vest",
+    "name": "Repair Leather Vest",
+    "category": "leatherworking",
+    "requiredLevel": 2,
+    "ingredients": [
+      {
+        "itemId": "boar_hide",
+        "quantity": 2
+      },
+      {
+        "itemId": "flax_fiber",
+        "quantity": 2
+      }
+    ],
+    "output": {
+      "itemId": "patched_leather_vest",
+      "quantity": 1
+    }
+  },
+  {
+    "id": "carve_oak_walking_staff",
+    "name": "Carve Oak Walking Staff",
+    "category": "woodworking",
+    "requiredLevel": 1,
+    "ingredients": [
+      {
+        "itemId": "hardwood",
+        "quantity": 2
+      }
+    ],
+    "output": {
+      "itemId": "oak_walking_staff",
+      "quantity": 1
+    }
+  }
+]

@@ -1,0 +1,13 @@
+[
+  {
+    "id": "verdant_expanse",
+    "name": "Verdant Expanse",
+    "description": "A broad green realm of old farms, tangled gardens, and forests that remember too much.",
+    "zoneIds": [
+      "bounding_plains",
+      "whispering_gardens",
+      "deep_woods"
+    ],
+    "startingZoneId": "bounding_plains"
+  }
+]

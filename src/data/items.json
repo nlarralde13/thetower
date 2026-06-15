@@ -1,0 +1,253 @@
+[
+  {
+    "id": "rusted_short_sword",
+    "name": "Rusted Short Sword",
+    "type": "weapon",
+    "description": "A neglected blade that remains better than bare hands.",
+    "value": 8,
+    "stackable": false,
+    "stats": {
+      "attack": 4
+    }
+  },
+  {
+    "id": "worn_pitchfork",
+    "name": "Worn Pitchfork",
+    "type": "weapon",
+    "description": "A farm tool sturdy enough to keep danger at arm's length.",
+    "value": 6,
+    "stackable": false,
+    "stats": {
+      "attack": 3
+    }
+  },
+  {
+    "id": "carpenter_hammer",
+    "name": "Carpenter's Hammer",
+    "type": "weapon",
+    "description": "A balanced crafting hammer with a solid iron head.",
+    "value": 7,
+    "stackable": false,
+    "stats": {
+      "attack": 2,
+      "crafting": 1
+    }
+  },
+  {
+    "id": "oak_walking_staff",
+    "name": "Oak Walking Staff",
+    "type": "weapon",
+    "description": "A stout staff polished smooth by years of travel.",
+    "value": 6,
+    "stackable": false,
+    "stats": {
+      "attack": 2,
+      "focus": 1
+    }
+  },
+  {
+    "id": "chipped_bottle",
+    "name": "Chipped Bottle",
+    "type": "weapon",
+    "description": "A broken bottle held by its cloth-wrapped neck.",
+    "value": 1,
+    "stackable": false,
+    "stats": {
+      "attack": 2
+    }
+  },
+  {
+    "id": "patched_leather_vest",
+    "name": "Patched Leather Vest",
+    "type": "armor",
+    "description": "Old leather armor reinforced with mismatched patches.",
+    "value": 10,
+    "stackable": false,
+    "stats": {
+      "defense": 3
+    }
+  },
+  {
+    "id": "linen_wrap",
+    "name": "Linen Wrap",
+    "type": "armor",
+    "description": "Layered linen offering light protection.",
+    "value": 4,
+    "stackable": false,
+    "stats": {
+      "defense": 1
+    }
+  },
+  {
+    "id": "minor_healing_potion",
+    "name": "Minor Healing Potion",
+    "type": "potion",
+    "description": "A bitter red tonic that closes small wounds.",
+    "value": 12,
+    "stackable": true,
+    "effects": {
+      "restoreHealth": 20
+    }
+  },
+  {
+    "id": "minor_focus_potion",
+    "name": "Minor Focus Potion",
+    "type": "potion",
+    "description": "A sharp herbal draught that clears the mind.",
+    "value": 12,
+    "stackable": true,
+    "effects": {
+      "restoreFocus": 15
+    }
+  },
+  {
+    "id": "turnip_seeds",
+    "name": "Turnip Seeds",
+    "type": "seed",
+    "description": "Hardy seeds suited to novice growers.",
+    "value": 2,
+    "stackable": true,
+    "cropId": "turnip"
+  },
+  {
+    "id": "flax_seeds",
+    "name": "Flax Seeds",
+    "type": "seed",
+    "description": "Small seeds that grow into useful fiber plants.",
+    "value": 3,
+    "stackable": true,
+    "cropId": "flax"
+  },
+  {
+    "id": "moonbean_seeds",
+    "name": "Moonbean Seeds",
+    "type": "seed",
+    "description": "Pale seeds that thrive beneath moonlight.",
+    "value": 6,
+    "stackable": true,
+    "cropId": "moonbean"
+  },
+  {
+    "id": "turnip",
+    "name": "Turnip",
+    "type": "food",
+    "description": "A plain but dependable root vegetable.",
+    "value": 3,
+    "stackable": true
+  },
+  {
+    "id": "flax_fiber",
+    "name": "Flax Fiber",
+    "type": "material",
+    "description": "Clean plant fibers ready to be spun or woven.",
+    "value": 3,
+    "stackable": true
+  },
+  {
+    "id": "moonbean",
+    "name": "Moonbean",
+    "type": "food",
+    "description": "A faintly luminous bean with restorative properties.",
+    "value": 7,
+    "stackable": true
+  },
+  {
+    "id": "wood_scraps",
+    "name": "Wood Scraps",
+    "type": "material",
+    "description": "Dry pieces of workable timber.",
+    "value": 1,
+    "stackable": true
+  },
+  {
+    "id": "hardwood",
+    "name": "Hardwood",
+    "type": "material",
+    "description": "Dense timber cut from an old-growth tree.",
+    "value": 5,
+    "stackable": true
+  },
+  {
+    "id": "iron_ore",
+    "name": "Iron Ore",
+    "type": "material",
+    "description": "A heavy stone threaded with usable iron.",
+    "value": 4,
+    "stackable": true
+  },
+  {
+    "id": "wild_herbs",
+    "name": "Wild Herbs",
+    "type": "material",
+    "description": "A fragrant bundle used in simple remedies.",
+    "value": 2,
+    "stackable": true
+  },
+  {
+    "id": "spider_silk",
+    "name": "Spider Silk",
+    "type": "material",
+    "description": "Strong, flexible strands harvested from a giant spider.",
+    "value": 4,
+    "stackable": true
+  },
+  {
+    "id": "boar_hide",
+    "name": "Boar Hide",
+    "type": "material",
+    "description": "A thick hide suitable for rugged leatherwork.",
+    "value": 5,
+    "stackable": true
+  },
+  {
+    "id": "verdant_field_notes",
+    "name": "Verdant Field Notes",
+    "type": "lore",
+    "description": "A scholar's observations on the strange growth of the Expanse.",
+    "value": 3,
+    "stackable": false,
+    "loreId": "verdant_field_notes"
+  },
+  {
+    "id": "gardeners_journal_page",
+    "name": "Gardener's Journal Page",
+    "type": "lore",
+    "description": "A torn page describing voices beneath the garden soil.",
+    "value": 4,
+    "stackable": false,
+    "loreId": "gardeners_journal"
+  },
+  {
+    "id": "old_rangers_map",
+    "name": "Old Ranger's Map",
+    "type": "lore",
+    "description": "A weathered map showing paths no longer found in the Deep Woods.",
+    "value": 8,
+    "stackable": false,
+    "loreId": "lost_woodland_paths"
+  },
+  {
+    "id": "stale_ale",
+    "name": "Stale Ale",
+    "type": "junk",
+    "description": "Flat, warm, and only technically drinkable.",
+    "value": 1,
+    "stackable": true
+  },
+  {
+    "id": "pocket_lint",
+    "name": "Pocket Lint",
+    "type": "junk",
+    "description": "A mysterious collection of fibers and crumbs.",
+    "value": 0,
+    "stackable": true
+  },
+  {
+    "id": "bent_copper_coin",
+    "name": "Bent Copper Coin",
+    "type": "junk",
+    "description": "A defaced coin rejected by most merchants.",
+    "value": 1,
+    "stackable": true
+  }
+]

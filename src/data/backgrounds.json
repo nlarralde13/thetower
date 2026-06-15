@@ -1,0 +1,52 @@
+[
+  {
+    "id": "farmer",
+    "name": "Farmer",
+    "description": "A patient grower who knows the soil and the seasons.",
+    "startingItems": ["worn_pitchfork", "turnip_seeds", "minor_healing_potion"],
+    "bonuses": {
+      "farming": 2,
+      "endurance": 1
+    }
+  },
+  {
+    "id": "artisan",
+    "name": "Artisan",
+    "description": "A practiced maker skilled at turning raw materials into useful goods.",
+    "startingItems": ["carpenter_hammer", "wood_scraps", "linen_wrap"],
+    "bonuses": {
+      "crafting": 2,
+      "dexterity": 1
+    }
+  },
+  {
+    "id": "militia",
+    "name": "Militia",
+    "description": "A local defender with basic weapons training and a steady nerve.",
+    "startingItems": ["rusted_short_sword", "patched_leather_vest", "minor_healing_potion"],
+    "bonuses": {
+      "combat": 2,
+      "strength": 1
+    }
+  },
+  {
+    "id": "drunkard",
+    "name": "Drunkard",
+    "description": "A battered survivor whose poor choices have produced unusual resilience.",
+    "startingItems": ["chipped_bottle", "stale_ale", "pocket_lint"],
+    "bonuses": {
+      "resilience": 2,
+      "luck": 1
+    }
+  },
+  {
+    "id": "scholar",
+    "name": "Scholar",
+    "description": "A seeker of forgotten knowledge who recognizes clues others overlook.",
+    "startingItems": ["oak_walking_staff", "verdant_field_notes", "minor_focus_potion"],
+    "bonuses": {
+      "lore": 2,
+      "intellect": 1
+    }
+  }
+]

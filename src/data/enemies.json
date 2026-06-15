@@ -1,0 +1,120 @@
+[
+  {
+    "id": "spider",
+    "name": "Spider",
+    "description": "An oversized field spider quick to defend its nest.",
+    "level": 1,
+    "stats": {
+      "health": 16,
+      "damageMin": 2,
+      "damageMax": 4,
+      "defense": 0
+    },
+    "loot": [
+      {
+        "itemId": "spider_silk",
+        "chance": 0.65,
+        "minQuantity": 1,
+        "maxQuantity": 2
+      }
+    ]
+  },
+  {
+    "id": "goblin_scavenger",
+    "name": "Goblin Scavenger",
+    "description": "A wiry looter armed with whatever it found most recently.",
+    "level": 2,
+    "stats": {
+      "health": 24,
+      "damageMin": 4,
+      "damageMax": 6,
+      "defense": 1
+    },
+    "loot": [
+      {
+        "itemId": "bent_copper_coin",
+        "chance": 0.8,
+        "minQuantity": 1,
+        "maxQuantity": 4
+      },
+      {
+        "itemId": "wood_scraps",
+        "chance": 0.35,
+        "minQuantity": 1,
+        "maxQuantity": 2
+      }
+    ]
+  },
+  {
+    "id": "bandit_scout",
+    "name": "Bandit Scout",
+    "description": "A lightly armed lookout who strikes before raising the alarm.",
+    "level": 3,
+    "stats": {
+      "health": 30,
+      "damageMin": 6,
+      "damageMax": 8,
+      "defense": 2
+    },
+    "loot": [
+      {
+        "itemId": "minor_healing_potion",
+        "chance": 0.2,
+        "minQuantity": 1,
+        "maxQuantity": 1
+      },
+      {
+        "itemId": "flax_fiber",
+        "chance": 0.45,
+        "minQuantity": 1,
+        "maxQuantity": 3
+      }
+    ]
+  },
+  {
+    "id": "wild_boar",
+    "name": "Wild Boar",
+    "description": "A territorial boar capable of a devastating charge.",
+    "level": 3,
+    "stats": {
+      "health": 38,
+      "damageMin": 7,
+      "damageMax": 9,
+      "defense": 2
+    },
+    "loot": [
+      {
+        "itemId": "boar_hide",
+        "chance": 0.75,
+        "minQuantity": 1,
+        "maxQuantity": 2
+      }
+    ]
+  },
+  {
+    "id": "rabid_bear",
+    "name": "Rabid Bear",
+    "description": "A massive sickened bear driven into relentless aggression.",
+    "level": 5,
+    "stats": {
+      "health": 72,
+      "damageMin": 11,
+      "damageMax": 15,
+      "defense": 4
+    },
+    "loot": [
+      {
+        "itemId": "boar_hide",
+        "chance": 0.15,
+        "minQuantity": 1,
+        "maxQuantity": 1
+      },
+      {
+        "itemId": "hardwood",
+        "chance": 0.3,
+        "minQuantity": 1,
+        "maxQuantity": 2
+      }
+    ]
+  }
+]

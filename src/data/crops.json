@@ -1,0 +1,38 @@
+[
+  {
+    "id": "turnip",
+    "name": "Turnip",
+    "seedItemId": "turnip_seeds",
+    "harvestItemId": "turnip",
+    "growthCycles": 2,
+    "waterPerCycle": 1,
+    "harvestQuantity": {
+      "min": 2,
+      "max": 4
+    }
+  },
+  {
+    "id": "flax",
+    "name": "Flax",
+    "seedItemId": "flax_seeds",
+    "harvestItemId": "flax_fiber",
+    "growthCycles": 3,
+    "waterPerCycle": 1,
+    "harvestQuantity": {
+      "min": 2,
+      "max": 5
+    }
+  },
+  {
+    "id": "moonbean",
+    "name": "Moonbean",
+    "seedItemId": "moonbean_seeds",
+    "harvestItemId": "moonbean",
+    "growthCycles": 4,
+    "waterPerCycle": 2,
+    "harvestQuantity": {
+      "min": 1,
+      "max": 3
+    }
+  }
+]

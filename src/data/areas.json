@@ -1,0 +1,138 @@
+[
+  {
+    "id": "quiet_pond",
+    "zoneId": "bounding_plains",
+    "name": "Quiet Pond",
+    "description": "A still pond surrounded by reeds and smooth stones.",
+    "recommendedLevel": 1,
+    "enemyIds": [],
+    "enemyPool": [
+      {
+        "enemyId": "spider",
+        "weight": 100
+      }
+    ],
+    "encounterChance": 0.12,
+    "resourceItemIds": ["wild_herbs"],
+    "connectedAreaIds": ["cluster_of_trees", "field_of_grain"],
+    "revealText": "You spot a still pond surrounded by reeds."
+  },
+  {
+    "id": "cluster_of_trees",
+    "zoneId": "bounding_plains",
+    "name": "Cluster of Trees",
+    "description": "A dense stand of trees rising from the grasslands.",
+    "recommendedLevel": 1,
+    "enemyIds": ["spider"],
+    "enemyPool": [
+      {
+        "enemyId": "spider",
+        "weight": 100
+      }
+    ],
+    "encounterChance": 0.2,
+    "resourceItemIds": ["wood_scraps"],
+    "connectedAreaIds": ["quiet_pond", "abandoned_campsite"],
+    "revealText": "You discover a cluster of trees rising from the grassland."
+  },
+  {
+    "id": "field_of_grain",
+    "zoneId": "bounding_plains",
+    "name": "Field of Grain",
+    "description": "An overgrown field of grain sways in the wind.",
+    "recommendedLevel": 1,
+    "enemyIds": ["wild_boar"],
+    "enemyPool": [
+      {
+        "enemyId": "wild_boar",
+        "weight": 100
+      }
+    ],
+    "encounterChance": 0.2,
+    "resourceItemIds": ["turnip_seeds"],
+    "connectedAreaIds": ["quiet_pond", "broken_wagon"],
+    "revealText": "You discover a field of grain rippling in the wind."
+  },
+  {
+    "id": "abandoned_campsite",
+    "zoneId": "bounding_plains",
+    "name": "Abandoned Campsite",
+    "description": "A long-forgotten campsite sits undisturbed.",
+    "recommendedLevel": 1,
+    "enemyIds": ["bandit_scout"],
+    "enemyPool": [
+      {
+        "enemyId": "bandit_scout",
+        "weight": 100
+      }
+    ],
+    "encounterChance": 0.2,
+    "resourceItemIds": ["linen_wrap"],
+    "connectedAreaIds": ["cluster_of_trees", "broken_wagon"],
+    "revealText": "You find an abandoned campsite with an old fire ring."
+  },
+  {
+    "id": "broken_wagon",
+    "zoneId": "bounding_plains",
+    "name": "Broken Wagon",
+    "description": "A shattered wagon lies half buried in tall grass.",
+    "recommendedLevel": 1,
+    "enemyIds": ["goblin_scavenger"],
+    "enemyPool": [
+      {
+        "enemyId": "goblin_scavenger",
+        "weight": 100
+      }
+    ],
+    "encounterChance": 0.2,
+    "resourceItemIds": ["wood_scraps"],
+    "connectedAreaIds": ["field_of_grain", "abandoned_campsite"],
+    "revealText": "You spot a broken wagon half-buried in tall grass."
+  },
+  {
+    "id": "whispering_gardens",
+    "zoneId": "whispering_gardens",
+    "name": "Whispering Gardens",
+    "description": "Overgrown terraces where flowers murmur when no breeze is blowing.",
+    "recommendedLevel": 2,
+    "enemyIds": ["spider", "bandit_scout"],
+    "enemyPool": [
+      {
+        "enemyId": "spider",
+        "weight": 60
+      },
+      {
+        "enemyId": "bandit_scout",
+        "weight": 40
+      }
+    ],
+    "encounterChance": 0.2,
+    "resourceItemIds": ["wild_herbs", "flax_fiber", "gardeners_journal_page"],
+    "connectedAreaIds": []
+  },
+  {
+    "id": "deep_woods",
+    "zoneId": "deep_woods",
+    "name": "The Deep Woods",
+    "description": "A dense ancient forest where the trails shift beneath a dark canopy.",
+    "recommendedLevel": 4,
+    "enemyIds": ["goblin_scavenger", "wild_boar", "rabid_bear"],
+    "enemyPool": [
+      {
+        "enemyId": "goblin_scavenger",
+        "weight": 30
+      },
+      {
+        "enemyId": "wild_boar",
+        "weight": 30
+      },
+      {
+        "enemyId": "rabid_bear",
+        "weight": 40
+      }
+    ],
+    "encounterChance": 0.3,
+    "resourceItemIds": ["hardwood", "iron_ore", "old_rangers_map"],
+    "connectedAreaIds": []
+  }
+]

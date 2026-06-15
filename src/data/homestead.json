@@ -1,0 +1,42 @@
+{
+  "id": "verdant_homestead",
+  "name": "Verdant Homestead",
+  "description": "A neglected farmstead that can grow into a secure base of operations.",
+  "startingPlots": 3,
+  "maxPlots": 12,
+  "startingStorageSlots": 20,
+  "facilities": [
+    {
+      "id": "garden_plot",
+      "name": "Garden Plot",
+      "description": "A patch of prepared soil used to grow crops.",
+      "startingLevel": 1,
+      "maxLevel": 3,
+      "unlocks": ["plant_crops", "harvest_crops"]
+    },
+    {
+      "id": "workbench",
+      "name": "Workbench",
+      "description": "A sturdy surface for basic crafting and repairs.",
+      "startingLevel": 1,
+      "maxLevel": 3,
+      "unlocks": ["woodworking", "leatherworking"]
+    },
+    {
+      "id": "hearth",
+      "name": "Hearth",
+      "description": "A warm fire for resting and preparing simple remedies.",
+      "startingLevel": 1,
+      "maxLevel": 3,
+      "unlocks": ["rest", "alchemy"]
+    },
+    {
+      "id": "storage_shed",
+      "name": "Storage Shed",
+      "description": "A dry place to keep materials, equipment, and harvests.",
+      "startingLevel": 1,
+      "maxLevel": 3,
+      "unlocks": ["item_storage"]
+    }
+  ]
+}
