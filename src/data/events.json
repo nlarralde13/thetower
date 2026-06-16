@@ -3,6 +3,7 @@
     "id": "roadside_wagon",
     "name": "The Broken Wagon",
     "areaId": "broken_wagon",
+    "activityId": "",
     "description": "A shattered wagon sits half buried in tall grass.",
     "choices": [
       {
@@ -46,6 +47,7 @@
     "id": "garden_whispers",
     "name": "Whispers Under Glass",
     "areaId": "whispering_gardens",
+    "activityId": "",
     "description": "A cracked greenhouse repeats a phrase in a voice like rustling leaves.",
     "choices": [
       {
@@ -75,6 +77,7 @@
     "id": "lost_ranger_cache",
     "name": "The Ranger's Cache",
     "areaId": "deep_woods",
+    "activityId": "",
     "description": "Old trail marks point toward a hollow sealed with thorny roots.",
     "choices": [
       {

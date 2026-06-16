@@ -1,11 +1,11 @@
 import { useEffect, useState } from 'react';
 import {
   addItem,
-  areaById,
+  getAvailableAreas,
   getAvailableZones,
   getDiscoveredAreas,
   backgrounds,
-  createEnemyState,
+  createEnemyStateWithContext,
   createNewGame,
   cropById,
   discoverArea,
@@ -16,6 +16,7 @@ import {
   getEvent,
   getItem,
   getRealm,
+  getRealmStartLocation,
   getZone,
   hasItems,
   homestead,
@@ -23,15 +24,19 @@ import {
   loadGame,
   newPlayer,
   realms,
+  recipes,
   isAreaDiscovered,
   zones,
   removeItem,
   rollInt,
+  normalizeGameState,
   saveGame,
+  setRuntimeContent,
   totalDamage,
   totalDefense,
   enemyDamageRange,
   type AreaDef,
+  type AreaActivityDef,
   type CombatState,
   type EventChoiceDef,
   type EventDef,
@@ -41,59 +46,14 @@ import {
   type Screen,
   type CropPlotState,
   type EventState,
+  type RecipeDef,
   xpToNextLevel
 } from './game';
-
-type AreaActivity = {
-  id: string;
-  label: string;
-  kind: 'message' | 'event' | 'leave';
-  message?: string;
-  eventId?: string;
-};
-
-const activitiesByArea: Record<string, AreaActivity[]> = {
-  quiet_pond: [
-    { id: 'fish', label: 'Fish', kind: 'message', message: 'You cast a line into the still water.' },
-    { id: 'search_shore', label: 'Search Shore', kind: 'message', message: 'The shore is lined with smooth stones and reeds.' },
-    { id: 'gather_reeds', label: 'Gather Reeds', kind: 'message', message: 'You gather a small bundle of reeds.' },
-    { id: 'leave', label: 'Leave', kind: 'leave' }
-  ],
-  cluster_of_trees: [
-    { id: 'gather_wood', label: 'Gather Wood', kind: 'message', message: 'You collect a few dry branches.' },
-    { id: 'explore', label: 'Explore', kind: 'message', message: 'The trees rustle, but nothing steps out.' },
-    { id: 'rest', label: 'Rest', kind: 'message', message: 'You take a short rest in the shade.' },
-    { id: 'leave', label: 'Leave', kind: 'leave' }
-  ],
-  field_of_grain: [
-    { id: 'harvest', label: 'Harvest Grain', kind: 'message', message: 'You cut a handful of grain for later.' },
-    { id: 'search', label: 'Search Field', kind: 'message', message: 'You comb the stalks for anything unusual.' },
-    { id: 'explore', label: 'Explore', kind: 'message', message: 'The tall grain shifts around you.' },
-    { id: 'leave', label: 'Leave', kind: 'leave' }
-  ],
-  abandoned_campsite: [
-    { id: 'search_camp', label: 'Search Camp', kind: 'message', message: 'The campsite is long empty, but not untouched.' },
-    { id: 'rest', label: 'Rest', kind: 'message', message: 'You rest beside the old fire ring.' },
-    { id: 'explore', label: 'Explore', kind: 'message', message: 'You circle the camp and check its edges.' },
-    { id: 'leave', label: 'Leave', kind: 'leave' }
-  ],
-  broken_wagon: [
-    { id: 'search_wagon', label: 'Search Wagon', kind: 'event', eventId: 'roadside_wagon' },
-    { id: 'investigate_tracks', label: 'Investigate Tracks', kind: 'message', message: 'Fresh tracks trail off into the grass.' },
-    { id: 'explore', label: 'Explore', kind: 'message', message: 'Splintered boards creak underfoot.' },
-    { id: 'leave', label: 'Leave', kind: 'leave' }
-  ],
-  whispering_gardens: [
-    { id: 'listen', label: 'Listen Among the Blooms', kind: 'event', eventId: 'garden_whispers' },
-    { id: 'search', label: 'Search the Terraces', kind: 'message', message: 'You inspect the garden terraces for clues.' },
-    { id: 'leave', label: 'Leave', kind: 'leave' }
-  ],
-  deep_woods: [
-    { id: 'track', label: 'Track the Old Paths', kind: 'event', eventId: 'lost_ranger_cache' },
-    { id: 'forage', label: 'Forage Under the Canopy', kind: 'message', message: 'You gather bark, leaves, and dry twigs.' },
-    { id: 'leave', label: 'Leave', kind: 'leave' }
-  ]
-};
+import { AdminScreen } from './components/AdminScreen';
+import { buildRuntimeContentFromDrafts } from './adminDrafts';
+import { useAdminDrafts } from './useAdminDrafts';
+import { useAppPathname } from './useAppPathname';
+import { useThemeMode } from './useThemeMode';
 
 const storageAreaSlots = ['plot-1', 'plot-2', 'shed-1', 'kitchen-1', 'empty-5', 'empty-6', 'empty-7', 'empty-8', 'empty-9'];
 function formatDuration(totalSeconds: number) {
@@ -140,11 +100,59 @@ function getReturnBandStatus(returnBand: GameState['returnBand']) {
   };
 }
 
+function formatInventoryEntry(entry: InventoryEntry) {
+  const item = getItem(entry.itemId);
+  const details = [item?.description].filter(Boolean);
+  if (entry.maxDurability != null && entry.durability != null) {
+    details.push(`Durability ${entry.durability}/${entry.maxDurability}`);
+  }
+  return {
+    name: item?.name ?? entry.itemId,
+    quantity: entry.quantity,
+    type: item?.type ?? 'unknown',
+    details
+  };
+}
+
+function getRecipeMissingIngredients(recipe: RecipeDef, inventory: InventoryEntry[]) {
+  return recipe.ingredients
+    .map((ingredient) => {
+      const available = itemCount(inventory, ingredient.itemId);
+      return {
+        ...ingredient,
+        available,
+        missing: Math.max(0, ingredient.quantity - available)
+      };
+    })
+    .filter((ingredient) => ingredient.missing > 0);
+}
+
 function App() {
-  const [state, setState] = useState<GameState>(() => loadGame() ?? createNewGame());
+  const [state, setState] = useState<GameState>(() => {
+    const loaded = loadGame() ?? createNewGame();
+    return loaded.screen === 'admin' ? { ...loaded, screen: 'village' } : loaded;
+  });
   const [nameDraft, setNameDraft] = useState('');
   const [selectedBackgroundId, setSelectedBackgroundId] = useState(backgrounds[0]?.id ?? 'farmer');
+  const [craftingOrigin, setCraftingOrigin] = useState<'village' | 'character'>('village');
+  const [settingsOpen, setSettingsOpen] = useState(false);
+  const {
+    drafts: adminDrafts,
+    setDrafts: setAdminDrafts,
+    resetDrafts: resetAdminDrafts,
+    refreshDrafts: refreshAdminDrafts,
+    syncState: adminSyncState,
+    error: adminSyncError,
+    contentStatusLabel: adminContentStatusLabel
+  } = useAdminDrafts();
+  const { navigate, isAdminRoute } = useAppPathname();
+  const { theme, isDark, toggleTheme } = useThemeMode();
   const [, setClockTick] = useState(0);
+
+  useEffect(() => {
+    setRuntimeContent(buildRuntimeContentFromDrafts(adminDrafts));
+    setState((current) => normalizeGameState(current));
+  }, [adminDrafts]);
 
   useEffect(() => {
     if (state.player) saveGame(state);
@@ -169,11 +177,33 @@ function App() {
     }
   }, [state.player, state.screen]);
 
+  useEffect(() => {
+    if (!isAdminRoute) return;
+    if (state.screen === 'admin') {
+      setState((current) => ({ ...current, screen: 'village' }));
+    }
+  }, [isAdminRoute, state.screen]);
+
   const player = state.player;
-  const selectedRealm = getRealm(state.selectedRealmId) ?? realms[0];
-  const selectedZone = getZone(state.selectedZoneId) ?? getAvailableZones(selectedRealm.id)[0] ?? zones[0];
-  const selectedArea = getArea(state.selectedAreaId) ?? areaById.get(selectedZone.startingAreaId) ?? null;
+  const selectedRealm = getRealm(state.selectedRealmId) ?? realms[0] ?? null;
+  const selectedZone =
+    getZone(state.selectedZoneId) ??
+    (selectedRealm ? getAvailableZones(selectedRealm.id)[0] : null) ??
+    zones[0] ??
+    null;
+  const selectedArea =
+    getArea(state.selectedAreaId) ??
+    (selectedZone ? getArea(selectedZone.startingAreaId) ?? getAvailableAreas(selectedZone.id)[0] : null) ??
+    null;
   const currentArea = player && selectedArea && isAreaDiscovered(player, selectedArea.id) ? selectedArea : null;
+  const currentStatus = player
+    ? {
+        name: player.name,
+        level: player.level,
+        hp: `${player.hp}/${player.maxHp}`,
+        mp: `${player.mp}/${player.maxMp}`
+      }
+    : null;
 
   const commit = (updater: (current: GameState) => GameState) => {
     setState((current) => {
@@ -219,14 +249,15 @@ function App() {
   const selectRealm = (realmId: string) => {
     const realm = getRealm(realmId);
     if (!realm) return;
-    const nextZoneId = realm.startingZoneId;
-    const nextZone = getZone(nextZoneId) ?? getAvailableZones(realm.id)[0];
-    if (!nextZone) return;
+    const start = getRealmStartLocation(realm.id);
+    const nextZone = start?.zone ?? getAvailableZones(realm.id)[0];
+    const nextArea = start?.area ?? (nextZone ? getArea(nextZone.startingAreaId) ?? getAvailableAreas(nextZone.id)[0] ?? null : null);
+    if (!nextZone || !nextArea) return;
     commit((current) => ({
       ...current,
       selectedRealmId: realmId,
       selectedZoneId: nextZone.id,
-      selectedAreaId: nextZone.startingAreaId,
+      selectedAreaId: nextArea.id,
       screen: 'zone-select',
       message: `Selected ${realm.name}.`
     }));
@@ -235,11 +266,12 @@ function App() {
   const selectZone = (zoneId: string) => {
     const zone = getZone(zoneId);
     if (!zone) return;
+    const nextArea = getArea(zone.startingAreaId) ?? getAvailableAreas(zone.id)[0] ?? null;
     commit((current) => ({
       ...current,
       selectedRealmId: zone.realmId,
       selectedZoneId: zoneId,
-      selectedAreaId: zone.startingAreaId,
+      selectedAreaId: nextArea?.id ?? '',
       screen: 'area-select',
       message: `Selected ${zone.name}.`
     }));
@@ -268,7 +300,208 @@ function App() {
         : current.player,
       screen: 'exploration',
       message: 'Exploring the area.'
+      }));
+  };
+
+  const placePlayerInArea = (areaId: string, message: string) => {
+    const area = getArea(areaId);
+    if (!area || !state.player) return;
+    const zone = getZone(area.zoneId);
+    const realm = zone ? getRealm(zone.realmId) : undefined;
+    commit((current) => {
+      const nextPlayer = current.player
+        ? discoverArea(current.player, area.id)
+        : current.player;
+      return {
+        ...current,
+        selectedRealmId: realm?.id ?? current.selectedRealmId,
+        selectedZoneId: zone?.id ?? current.selectedZoneId,
+        selectedAreaId: area.id,
+        player: nextPlayer
+          ? {
+              ...nextPlayer,
+              location: {
+                realmId: realm?.id ?? current.selectedRealmId,
+                zoneId: zone?.id ?? current.selectedZoneId,
+                areaId: area.id
+              }
+            }
+          : nextPlayer,
+        screen: 'exploration',
+        pendingEvent: null,
+        combat: null,
+        message
+      };
+    });
+  };
+
+  const beginCombat = (enemyId: string, returnAreaId: string, loot: InventoryEntry[] = []) => {
+    commit((current) => ({
+      ...current,
+      combat: createEnemyStateWithContext(enemyId, { loot, returnAreaId }),
+      screen: 'combat',
+      message: 'An enemy closes in.'
     }));
+  };
+
+  const executeActivityAction = (activity: AreaActivityDef, areaId: string) => {
+    if (!state.player) return false;
+    const params = activity.params ?? {};
+    const getText = (key: string, fallback = '') => {
+      const value = params[key];
+      return typeof value === 'string' ? value : fallback;
+    };
+    const getNumber = (key: string, fallback = 0) => {
+      const value = params[key];
+      return typeof value === 'number' ? value : fallback;
+    };
+
+    const nextMessage = (message: string) => {
+      commit((current) => ({ ...current, message }));
+    };
+
+    const updatePlayer = (updater: (player: PlayerState) => PlayerState, message: string) => {
+      commit((current) => ({
+        ...current,
+        player: current.player ? updater(current.player) : current.player,
+        message
+      }));
+    };
+
+    switch (activity.action) {
+      case 'searchCamp': {
+        const onceFlag = getText('onceFlag', 'verdantCampSearchCompleted');
+        const text = getText('text', activity.message ?? 'You find something useful.');
+        const repeatText = getText('repeatText', 'You search the camp again but find nothing useful.');
+        const itemId = getText('itemId', '');
+        const alreadyDone = !!state.player.scriptedFlags[onceFlag];
+        if (alreadyDone) {
+          nextMessage(repeatText);
+          return true;
+        }
+        updatePlayer((player) => ({
+          ...player,
+          inventory: itemId && itemCount(player.inventory, itemId) <= 0 ? addItem(player.inventory, itemId, 1) : player.inventory,
+          scriptedFlags: { ...player.scriptedFlags, [onceFlag]: true }
+        }), text);
+        return true;
+      }
+      case 'travel': {
+        const destinationAreaId = activity.destinationAreaId ?? getText('destinationAreaId', '');
+        if (!destinationAreaId) return false;
+        const ambushEnemyId = getText('ambushEnemyId', 'wild_hog');
+        const ambushChance = getNumber('ambushChance', 0.5);
+        const lootItems = getText('dropItemIds', '')
+          .split(',')
+          .map((entry) => entry.trim())
+          .filter(Boolean);
+        const loot = lootItems.map((itemId) => ({ itemId, quantity: 1 }));
+        if (Math.random() < ambushChance) {
+          beginCombat(ambushEnemyId, destinationAreaId, loot);
+          return true;
+        }
+        placePlayerInArea(destinationAreaId, 'You travel on.');
+        return true;
+      }
+      case 'returnToTower':
+        commit((current) => ({
+          ...current,
+          screen: 'tower',
+          pendingEvent: null,
+          combat: null,
+          message: 'You return to the Tower from the camp.'
+        }));
+        return true;
+      case 'returnToCamp':
+        placePlayerInArea('abandoned_campsite', 'You return to the camp.');
+        return true;
+      case 'harvestTree': {
+        const requiredItemId = getText('requiredItemId', 'left_behind_axe');
+        const successItemId = getText('successItemId', 'wood');
+        const successChance = getNumber('successChance', 0.5);
+        const durabilityBreakChance = getNumber('durabilityBreakChance', 0.2);
+        const noToolMessage = getText('noToolMessage', 'You need something sharp enough to cut wood.');
+        const breakMessage = getText('breakMessage', 'The tool breaks apart.');
+        if (itemCount(state.player.inventory, requiredItemId) <= 0) {
+          nextMessage(noToolMessage);
+          return true;
+        }
+        let nextInventory = [...state.player.inventory];
+        let message = 'You strip a little wood from the tree line.';
+        if (Math.random() < successChance) {
+          nextInventory = addItem(nextInventory, successItemId, 1);
+          message = 'You cut down a small tree and collect wood.';
+        }
+        if (Math.random() < durabilityBreakChance) {
+          nextInventory = nextInventory
+            .map((entry) => {
+              if (entry.itemId !== requiredItemId || entry.durability == null || entry.maxDurability == null) return entry;
+              const durability = entry.durability - 1;
+              if (durability <= 0) return null;
+              return { ...entry, durability };
+            })
+            .filter((entry): entry is InventoryEntry => !!entry);
+          if (!nextInventory.some((entry) => entry.itemId === requiredItemId)) {
+            message = breakMessage;
+          }
+        }
+        updatePlayer((player) => ({ ...player, inventory: nextInventory }), message);
+        return true;
+      }
+      case 'searchWoods': {
+        const enemyId = getText('enemyId', 'spider');
+        const guaranteedDropItemId = getText('guaranteedDropItemId', 'spider_silk');
+        const guaranteedDropQuantity = getNumber('guaranteedDropQuantity', 1);
+        beginCombat(enemyId, areaId, [{ itemId: guaranteedDropItemId, quantity: guaranteedDropQuantity }]);
+        return true;
+      }
+      case 'fish': {
+        const requiredItemId = getText('requiredItemId', 'fishing_pole');
+        const successItemId = getText('successItemId', 'fish');
+        const successChance = getNumber('successChance', 0.5);
+        const noToolMessage = getText('noToolMessage', 'You need a fishing pole before you can fish here.');
+        const successMessage = getText('successMessage', 'You catch a fish.');
+        const failMessage = getText('failMessage', 'Nothing bites.');
+        if (itemCount(state.player.inventory, requiredItemId) <= 0) {
+          nextMessage(noToolMessage);
+          return true;
+        }
+        if (Math.random() < successChance) {
+          updatePlayer((player) => ({ ...player, inventory: addItem(player.inventory, successItemId, 1) }), successMessage);
+          return true;
+        }
+        nextMessage(failMessage);
+        return true;
+      }
+      case 'grantItem': {
+        const itemId = getText('itemId', '');
+        if (!itemId) return false;
+        const quantity = getNumber('quantity', 1);
+        const message = getText('text', `You receive ${itemId}.`);
+        updatePlayer((player) => ({ ...player, inventory: addItem(player.inventory, itemId, quantity) }), message);
+        return true;
+      }
+      case 'message':
+        nextMessage(activity.message ?? getText('text', activity.label));
+        return true;
+      case 'event': {
+        const eventId = activity.eventId ?? getText('eventId', '');
+        const event = getEvent(eventId);
+        if (!event) return false;
+        commit((current) => ({
+          ...current,
+          pendingEvent: { eventId: event.id, areaId },
+          screen: 'event',
+          message: activity.label
+        }));
+        return true;
+      }
+      case 'leave':
+        commit((current) => ({ ...current, screen: 'area-select', message: `Leaving ${currentArea?.name ?? 'the area'}.` }));
+        return true;
+      default:
+        return false;
+    }
   };
 
   const exploreZone = () => {
@@ -318,31 +551,21 @@ function App() {
   };
 
   const runActivity = (activityId: string) => {
-    const activity = activitiesByArea[currentArea?.id ?? '']?.find((entry) => entry.id === activityId);
+    const activity = currentArea?.activities?.find((entry) => entry.id === activityId);
     if (!activity) return;
     const area = currentArea;
+    if (area && executeActivityAction(activity, area.id)) return;
     const encounterChance = area?.encounterChance ?? 0;
     const encounterPool = area ? getAreaPool(area) : [];
     if (activity.kind !== 'leave' && area && encounterPool.length > 0 && Math.random() < encounterChance) {
       const encounter = weightedPick(encounterPool);
       if (encounter?.enemyId) {
-        startCombat(encounter.enemyId);
+        beginCombat(encounter.enemyId, area.id);
         return;
       }
     }
     if (activity.kind === 'leave') {
       commit((current) => ({ ...current, screen: 'area-select', message: `Leaving ${currentArea?.name ?? 'the area'}.` }));
-      return;
-    }
-    if (activity.kind === 'event' && activity.eventId) {
-      const event = getEvent(activity.eventId);
-      if (!event) return;
-      commit((current) => ({
-        ...current,
-        pendingEvent: { eventId: event.id, areaId: currentArea!.id },
-        screen: 'event',
-        message: activity.label
-      }));
       return;
     }
     commit((current) => ({ ...current, message: activity.message ?? activity.label }));
@@ -371,10 +594,13 @@ function App() {
     );
     const nextPlayer = { ...state.player, inventory: rewardedInventory };
     if (choice.outcome.combat) {
+      const pendingAreaId = state.pendingEvent.areaId;
       commit((current) => ({
         ...current,
         player: nextPlayer,
-        combat: createEnemyState(choice.outcome.combat!.enemyId),
+        combat: createEnemyStateWithContext(choice.outcome.combat!.enemyId, {
+          returnAreaId: pendingAreaId
+        }),
         screen: 'combat',
         pendingEvent: null,
         message: 'Combat begins.'
@@ -387,25 +613,6 @@ function App() {
       pendingEvent: null,
       screen: 'exploration',
       message: choice.outcome.text
-    }));
-  };
-
-  const startCombat = (enemyId: string) => {
-    commit((current) => ({
-      ...current,
-      combat: createEnemyState(enemyId),
-      screen: 'combat',
-      message: 'An enemy closes in.'
-    }));
-  };
-
-  const returnToExploration = (nextState: Partial<GameState> & { message: string }) => {
-    commit((current) => ({
-      ...current,
-      ...nextState,
-      combat: null,
-      pendingEvent: null,
-      screen: 'exploration'
     }));
   };
 
@@ -426,7 +633,8 @@ function App() {
 
     if (action === 'run') {
       if (Math.random() < 0.5) {
-        returnToExploration({ message: 'You escape back into the area.' });
+        placePlayerInArea(state.combat.returnAreaId ?? state.player.location.areaId, 'You escape back into the area.');
+        return;
       } else {
         log.push('You fail to escape.');
         player.hp = Math.max(0, player.hp - Math.max(1, enemyAttack - totalDefense(player)));
@@ -447,12 +655,37 @@ function App() {
     }
 
     if (combat.enemyHp <= 0) {
-      const loot = rollLoot(enemy);
+      const loot = [...combat.loot, ...rollLoot(enemy)];
       const totalLoot = loot.reduce((inventory, entry) => addItem(inventory, entry.itemId, entry.quantity), player.inventory);
       player.inventory = totalLoot;
       player.xp += 8 + enemy.level * 4;
       levelUpPlayer(player);
-      returnToExploration({ player, message: `${enemy.name} falls.` });
+      const returnAreaId = combat.returnAreaId ?? player.location.areaId;
+      const returnArea = getArea(returnAreaId);
+      const returnZone = returnArea ? getZone(returnArea.zoneId) : null;
+      const returnRealm = returnZone ? getRealm(returnZone.realmId) : null;
+      const nextPlayer = discoverArea(
+        {
+          ...player,
+          location: {
+            realmId: returnRealm?.id ?? state.selectedRealmId,
+            zoneId: returnZone?.id ?? state.selectedZoneId,
+            areaId: returnAreaId
+          }
+        },
+        returnAreaId
+      );
+      commit((current) => ({
+        ...current,
+        player: nextPlayer,
+        selectedAreaId: returnAreaId,
+        selectedZoneId: returnZone?.id ?? current.selectedZoneId,
+        selectedRealmId: returnRealm?.id ?? current.selectedRealmId,
+        combat: null,
+        pendingEvent: null,
+        screen: 'exploration',
+        message: `${enemy.name} falls.`
+      }));
       return;
     }
 
@@ -475,6 +708,10 @@ function App() {
     if (!state.player) return;
     const item = getItem(itemId);
     if (!item) return;
+    if (item.type !== 'weapon' && item.type !== 'armor') {
+      commit((current) => ({ ...current, message: 'That item cannot be equipped.' }));
+      return;
+    }
     const next = { ...state.player, equipment: { ...state.player.equipment } };
     if (item.type === 'weapon') next.equipment.weaponId = itemId;
     if (item.type === 'armor') next.equipment.armorId = itemId;
@@ -527,6 +764,50 @@ function App() {
     }));
   };
 
+  const openCrafting = (origin: 'village' | 'character') => {
+    setCraftingOrigin(origin);
+    commit((current) => ({
+      ...current,
+      screen: 'crafting',
+      message: 'Crafting menu open.'
+    }));
+  };
+
+  const closeCrafting = () => {
+    commit((current) => ({
+      ...current,
+      screen: craftingOrigin,
+      message: craftingOrigin === 'character' ? 'Character sheet open.' : 'Back in the village.'
+    }));
+  };
+
+  const craftRecipe = (recipeId: string) => {
+    if (!state.player) return;
+    const recipe = recipes.find((entry) => entry.id === recipeId);
+    if (!recipe) return;
+    if (state.player.level < recipe.requiredLevel) {
+      commit((current) => ({ ...current, message: `You need to be level ${recipe.requiredLevel} to craft this.` }));
+      return;
+    }
+    if (recipe.ingredients.some((ingredient) => !hasItems(state.player!.inventory, ingredient.itemId, ingredient.quantity))) {
+      commit((current) => ({ ...current, message: 'You lack the required ingredients.' }));
+      return;
+    }
+    const nextInventory = recipe.ingredients.reduce(
+      (inventory, ingredient) => removeItem(inventory, ingredient.itemId, ingredient.quantity),
+      state.player.inventory
+    );
+    const craftedInventory = addItem(nextInventory, recipe.output.itemId, recipe.output.quantity);
+    commit((current) => ({
+      ...current,
+      player: {
+        ...state.player!,
+        inventory: craftedInventory
+      },
+      message: `Crafted ${getItem(recipe.output.itemId)?.name ?? recipe.output.itemId}.`
+    }));
+  };
+
   const resetGame = () => {
     localStorage.removeItem('tower-rpg-save-v1');
     setNameDraft('');
@@ -555,111 +836,166 @@ function App() {
   };
 
   const screen = state.screen;
+  const showAdminRoute = isAdminRoute;
+  const goGameHome = () => navigate('/');
+  const goSettings = () => setSettingsOpen((current) => !current);
 
   return (
-    <div className="app-shell">
-      <header className="topbar">
-        <div className="topbar-title">
-          <div className="eyebrow">The Tower</div>
-          <h1>Verdant Expanse</h1>
-        </div>
-        <div className="topbar-actions">
-          <button className="ghost compact" onClick={useReturnBand} disabled={returnBandStatus.disabled || !state.player}>
-            <span className="eyebrow">Return Band</span>
-            <strong>{returnBandStatus.label}</strong>
-          </button>
-          <button className="ghost" onClick={resetGame}>Reset</button>
-        </div>
-      </header>
-
-      <main className="panel">
-        <StatusBar player={state.player} message={state.message} />
-        <Breadcrumbs
-          realm={selectedRealm}
-          zone={selectedZone}
-          area={currentArea}
-          onRealmClick={goToTower}
-          onZoneClick={goToZoneSelect}
-          onAreaClick={goToAreaSelect}
-        />
-
-        {screen === 'character-creation' && (
-          <CharacterCreation
-            nameDraft={nameDraft}
-            setNameDraft={setNameDraft}
-            backgrounds={backgrounds}
-            selectedBackgroundId={selectedBackgroundId}
-            setSelectedBackgroundId={setSelectedBackgroundId}
-            onStart={startGame}
+    <div className={showAdminRoute ? 'app-shell admin-app-shell' : 'app-shell'}>
+      {showAdminRoute ? (
+        <main className="admin-route-shell">
+          <AdminScreen
+            drafts={adminDrafts}
+            onChange={setAdminDrafts}
+            onReset={resetAdminDrafts}
+            onReload={refreshAdminDrafts}
+            onBack={goGameHome}
+            themeMode={theme}
+            onToggleTheme={toggleTheme}
+            syncState={adminSyncState}
+            syncError={adminSyncError}
+            contentStatusLabel={adminContentStatusLabel}
           />
-        )}
+        </main>
+      ) : (
+        <>
+          <header className="topbar">
+            <div className="topbar-title">
+              <div className="eyebrow">The Tower</div>
+              <h1>Verdant Expanse</h1>
+            </div>
+            <div className="topbar-status">
+              <div className="topbar-character">
+                <strong>{currentStatus?.name ?? 'No character'}</strong>
+                <div className="muted">
+                  Level {currentStatus?.level ?? 0} · HP {currentStatus?.hp ?? '--'} · MP {currentStatus?.mp ?? '--'}
+                </div>
+              </div>
+              <div className="topbar-actions">
+                <span className={state.player ? 'login-pill online' : 'login-pill'}>
+                  {state.player ? 'Logged In' : 'Guest'}
+                </span>
+                <div className="settings-wrap">
+                  <button className="ghost compact settings-button" onClick={goSettings} aria-expanded={settingsOpen}>
+                    <span className="eyebrow">Settings</span>
+                    <strong>{settingsOpen ? 'Open' : 'Menu'}</strong>
+                  </button>
+                  {settingsOpen && (
+                    <div className="settings-menu card">
+                      <button className="ghost" onClick={() => { toggleTheme(); setSettingsOpen(false); }} aria-pressed={isDark}>
+                        {isDark ? 'Switch to Light Mode' : 'Switch to Dark Mode'}
+                      </button>
+                      <button className="ghost" onClick={() => { useReturnBand(); setSettingsOpen(false); }} disabled={returnBandStatus.disabled || !state.player}>
+                        Return Band
+                      </button>
+                      <button className="ghost" onClick={() => { resetGame(); setSettingsOpen(false); }}>Reset Game</button>
+                    </div>
+                  )}
+                </div>
+              </div>
+            </div>
+          </header>
 
-        {screen === 'village' && (
-          <VillageScreen onEnterTower={enterTower} onHomestead={goHomestead} onCharacter={goCharacter} />
-        )}
+          <main className="panel">
+            <StatusBar player={state.player} message={state.message} />
 
-        {screen === 'tower' && (
-          <TowerScreen realms={realms} onSelectRealm={selectRealm} onBack={goVillage} />
-        )}
+            {screen === 'character-creation' && (
+              <CharacterCreation
+                nameDraft={nameDraft}
+                setNameDraft={setNameDraft}
+                backgrounds={backgrounds}
+                selectedBackgroundId={selectedBackgroundId}
+                setSelectedBackgroundId={setSelectedBackgroundId}
+                onStart={startGame}
+              />
+            )}
 
-        {screen === 'zone-select' && selectedRealm && (
-          <ZoneSelectScreen
-            realm={selectedRealm}
-            zones={getAvailableZones(selectedRealm.id)}
-            onSelectZone={selectZone}
-            onBack={() => commit((current) => ({ ...current, screen: 'tower' }))}
-          />
-        )}
+            {screen === 'village' && (
+            <VillageScreen
+              onEnterTower={enterTower}
+              onHomestead={goHomestead}
+              onCharacter={goCharacter}
+              onCrafting={() => openCrafting('village')}
+            />
+            )}
 
-        {screen === 'area-select' && selectedZone && (
-          <AreaSelectScreen
-            zone={selectedZone}
-            player={state.player}
-            onSelectArea={selectArea}
-            onExploreZone={exploreZone}
-            onBack={() => commit((current) => ({ ...current, screen: 'zone-select' }))}
-          />
-        )}
+            {screen === 'tower' && (
+              <TowerScreen realms={realms} onSelectRealm={selectRealm} onBack={goVillage} />
+            )}
 
-        {screen === 'exploration' && currentArea && (
-          <ExplorationScreen
+            {screen === 'zone-select' && selectedRealm && (
+              <ZoneSelectScreen
+                realm={selectedRealm}
+                zones={getAvailableZones(selectedRealm.id)}
+                onSelectZone={selectZone}
+                onBack={() => commit((current) => ({ ...current, screen: 'tower' }))}
+              />
+            )}
+
+            {screen === 'area-select' && selectedZone && (
+              <AreaSelectScreen
+                zone={selectedZone}
+                player={state.player}
+                onSelectArea={selectArea}
+                onExploreZone={exploreZone}
+                onBack={() => commit((current) => ({ ...current, screen: 'zone-select' }))}
+              />
+            )}
+
+            {screen === 'exploration' && currentArea && (
+        <ExplorationScreen
             area={currentArea}
-            activities={activitiesByArea[currentArea.id] ?? []}
+            activities={currentArea.activities ?? []}
             onRunActivity={runActivity}
             onBack={() => commit((current) => ({ ...current, screen: 'area-select' }))}
           />
-        )}
+            )}
 
-        {screen === 'event' && state.pendingEvent && currentArea && (
-          <EventScreen
-            event={getEvent(state.pendingEvent.eventId)!}
-            onChoice={resolveEventChoice}
-            onBack={() => commit((current) => ({ ...current, screen: 'exploration', pendingEvent: null }))}
-          />
-        )}
+            {screen === 'event' && state.pendingEvent && currentArea && (
+              <EventScreen
+                event={getEvent(state.pendingEvent.eventId)!}
+                onChoice={resolveEventChoice}
+                onBack={() => commit((current) => ({ ...current, screen: 'exploration', pendingEvent: null }))}
+              />
+            )}
 
-        {screen === 'combat' && state.combat && state.player && (
-          <CombatScreen
-            player={state.player}
-            combat={state.combat}
-            enemy={getEnemy(state.combat.enemyId)!}
-            onAction={combatAction}
-          />
-        )}
+            {screen === 'combat' && state.combat && state.player && (
+              <CombatScreen
+                player={state.player}
+                combat={state.combat}
+                enemy={getEnemy(state.combat.enemyId)!}
+                onAction={combatAction}
+              />
+            )}
 
-        {screen === 'homestead' && state.player && (
-          <HomesteadScreen
-            player={state.player}
-            onBack={goVillage}
-            onPlant={plantSeed}
-            onHarvest={harvestPlot}
-          />
-        )}
+            {screen === 'crafting' && state.player && (
+              <CraftingScreen
+                player={state.player}
+                onCraft={craftRecipe}
+                onBack={closeCrafting}
+              />
+            )}
 
-        {screen === 'character' && state.player && (
-          <CharacterScreen player={state.player} onBack={goVillage} onEquip={equipItem} />
-        )}
-      </main>
+            {screen === 'homestead' && state.player && (
+              <HomesteadScreen
+                player={state.player}
+                onBack={goVillage}
+                onPlant={plantSeed}
+                onHarvest={harvestPlot}
+              />
+            )}
+
+            {screen === 'character' && state.player && (
+              <CharacterScreen
+                player={state.player}
+                onBack={goVillage}
+                onCrafting={() => openCrafting('character')}
+                onEquip={equipItem}
+              />
+            )}
+          </main>
+        </>
+      )}
     </div>
   );
 }
@@ -669,29 +1005,6 @@ function StatusBar({ player, message }: { player: PlayerState | null; message: s
     <section className="status">
       <div>{player ? `${player.name} · HP ${player.hp}/${player.maxHp} · XP ${player.xp}` : 'No character created yet'}</div>
       <div className="muted">{message}</div>
-    </section>
-  );
-}
-
-function Breadcrumbs(props: {
-  realm: typeof realms[number];
-  zone: NonNullable<ReturnType<typeof getZone>>;
-  area: AreaDef | null;
-  onRealmClick: () => void;
-  onZoneClick: () => void;
-  onAreaClick: () => void;
-}) {
-  return (
-    <section className="breadcrumb-card" aria-label="Location breadcrumb">
-      <div className="breadcrumb-trail">
-        <button className="breadcrumb-link" onClick={props.onRealmClick}>{props.realm.name}</button>
-        <span className="breadcrumb-separator">›</span>
-        <button className="breadcrumb-link" onClick={props.onZoneClick}>{props.zone.name}</button>
-        <span className="breadcrumb-separator">›</span>
-        <button className="breadcrumb-link" onClick={props.onAreaClick} disabled={!props.area}>
-          {props.area?.name ?? 'Undiscovered'}
-        </button>
-      </div>
     </section>
   );
 }
@@ -740,11 +1053,17 @@ function CharacterCreation(props: {
   );
 }
 
-function VillageScreen(props: { onEnterTower: () => void; onHomestead: () => void; onCharacter: () => void }) {
+function VillageScreen(props: {
+  onEnterTower: () => void;
+  onHomestead: () => void;
+  onCharacter: () => void;
+  onCrafting: () => void;
+}) {
   return (
     <section className="stack">
       <h2>Village</h2>
       <button className="primary" onClick={props.onEnterTower}>Enter Tower</button>
+      <button className="secondary" onClick={props.onCrafting}>Crafting</button>
       <button className="secondary" onClick={props.onHomestead}>Homestead</button>
       <button className="secondary" onClick={props.onCharacter}>Character</button>
     </section>
@@ -842,7 +1161,7 @@ function AreaSelectScreen(props: {
 
 function ExplorationScreen(props: {
   area: AreaDef;
-  activities: AreaActivity[];
+  activities: AreaActivityDef[];
   onRunActivity: (id: string) => void;
   onBack: () => void;
 }) {
@@ -967,6 +1286,7 @@ function HomesteadScreen(props: {
 function CharacterScreen(props: {
   player: PlayerState;
   onBack: () => void;
+  onCrafting: () => void;
   onEquip: (itemId: string) => void;
 }) {
   const background = getBackground(props.player.backgroundId);
@@ -992,14 +1312,18 @@ function CharacterScreen(props: {
         <div className="muted">Weapon: {props.player.equipment.weaponId ? getItem(props.player.equipment.weaponId)?.name : 'None'}</div>
         <div className="muted">Armor: {props.player.equipment.armorId ? getItem(props.player.equipment.armorId)?.name : 'None'}</div>
       </div>
+      <button className="secondary" onClick={props.onCrafting}>Crafting</button>
       <div className="stack">
         <strong>Inventory</strong>
         {props.player.inventory.map((entry) => {
-          const item = getItem(entry.itemId);
+          const item = formatInventoryEntry(entry);
           return (
             <button key={entry.itemId} className="card" onClick={() => props.onEquip(entry.itemId)}>
-              <strong>{item?.name ?? entry.itemId}</strong>
-              <div className="muted">x{entry.quantity} · {item?.type ?? 'unknown'}</div>
+              <strong>{item.name}</strong>
+              <div className="muted">x{item.quantity} · {item.type}</div>
+              {item.details.map((detail) => (
+                <div key={detail} className="muted">{detail}</div>
+              ))}
             </button>
           );
         })}
@@ -1009,8 +1333,45 @@ function CharacterScreen(props: {
   );
 }
 
+function CraftingScreen(props: {
+  player: PlayerState;
+  onCraft: (recipeId: string) => void;
+  onBack: () => void;
+}) {
+  return (
+    <section className="stack">
+      <h2>Crafting</h2>
+      {recipes.map((recipe) => {
+        const missing = getRecipeMissingIngredients(recipe, props.player.inventory);
+        const canCraft = missing.length === 0 && props.player.level >= recipe.requiredLevel;
+        return (
+          <button key={recipe.id} className="card" onClick={() => props.onCraft(recipe.id)} disabled={!canCraft}>
+            <strong>{recipe.name}</strong>
+            <div className="muted">Produces {recipe.output.itemId} x{recipe.output.quantity}</div>
+            <div className="muted">Requires level {recipe.requiredLevel}</div>
+            <div className="muted">
+              Requires {recipe.ingredients.map((ingredient) => `${ingredient.itemId} x${ingredient.quantity}`).join(', ')}
+            </div>
+            {missing.length > 0 ? (
+              <div className="muted">
+                Missing {missing.map((ingredient) => `${ingredient.itemId} x${ingredient.missing}`).join(', ')}
+              </div>
+            ) : (
+              <div className="muted">Ready to craft</div>
+            )}
+          </button>
+        );
+      })}
+      <button className="ghost" onClick={props.onBack}>Back</button>
+    </section>
+  );
+}
+
 function rollLoot(enemy: NonNullable<ReturnType<typeof getEnemy>>) {
-  return enemy.loot.flatMap((drop) => {
+  const guaranteed = enemy.guaranteedDrops ?? [];
+  return [
+    ...guaranteed,
+    ...enemy.loot.flatMap((drop) => {
     if (Math.random() > drop.chance) return [];
     return [
       {
@@ -1018,7 +1379,8 @@ function rollLoot(enemy: NonNullable<ReturnType<typeof getEnemy>>) {
         quantity: rollInt(drop.minQuantity, drop.maxQuantity)
       }
     ];
-  });
+  })
+  ];
 }
 
 function levelUpPlayer(player: PlayerState) {

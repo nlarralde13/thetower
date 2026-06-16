@@ -3,251 +3,686 @@
     "id": "rusted_short_sword",
     "name": "Rusted Short Sword",
     "type": "weapon",
-    "description": "A neglected blade that remains better than bare hands.",
+    "slot": "weapon",
+    "rarity": "common",
     "value": 8,
-    "stackable": false,
-    "stats": {
-      "attack": 4
-    }
+    "description": "A neglected blade that remains better than bare hands.",
+    "damageMin": 4,
+    "damageMax": 4,
+    "armor": null,
+    "toolType": "",
+    "level": null,
+    "durability": null,
+    "maxDurability": null,
+    "effect": "",
+    "tags": [
+      "weapon"
+    ]
   },
   {
     "id": "worn_pitchfork",
     "name": "Worn Pitchfork",
     "type": "weapon",
-    "description": "A farm tool sturdy enough to keep danger at arm's length.",
+    "slot": "weapon",
+    "rarity": "common",
     "value": 6,
-    "stackable": false,
-    "stats": {
-      "attack": 3
-    }
+    "description": "A farm tool sturdy enough to keep danger at arm's length.",
+    "damageMin": 3,
+    "damageMax": 3,
+    "armor": null,
+    "toolType": "",
+    "level": null,
+    "durability": null,
+    "maxDurability": null,
+    "effect": "",
+    "tags": [
+      "weapon"
+    ]
   },
   {
     "id": "carpenter_hammer",
     "name": "Carpenter's Hammer",
     "type": "weapon",
-    "description": "A balanced crafting hammer with a solid iron head.",
+    "slot": "weapon",
+    "rarity": "common",
     "value": 7,
-    "stackable": false,
-    "stats": {
-      "attack": 2,
-      "crafting": 1
-    }
+    "description": "A balanced crafting hammer with a solid iron head.",
+    "damageMin": 2,
+    "damageMax": 2,
+    "armor": null,
+    "toolType": "",
+    "level": null,
+    "durability": null,
+    "maxDurability": null,
+    "effect": "",
+    "tags": [
+      "weapon"
+    ]
+  },
+  {
+    "id": "left_behind_axe",
+    "name": "Left Behind Axe",
+    "type": "tool",
+    "slot": "tool",
+    "rarity": "common",
+    "value": 5,
+    "description": "May be good for knocking down some small trees.",
+    "damageMin": null,
+    "damageMax": null,
+    "armor": null,
+    "toolType": "left_behind_axe",
+    "level": null,
+    "durability": 10,
+    "maxDurability": 10,
+    "effect": "",
+    "tags": [
+      "tool"
+    ]
   },
   {
     "id": "oak_walking_staff",
     "name": "Oak Walking Staff",
     "type": "weapon",
-    "description": "A stout staff polished smooth by years of travel.",
+    "slot": "weapon",
+    "rarity": "common",
     "value": 6,
-    "stackable": false,
-    "stats": {
-      "attack": 2,
-      "focus": 1
-    }
+    "description": "A stout staff polished smooth by years of travel.",
+    "damageMin": 2,
+    "damageMax": 2,
+    "armor": null,
+    "toolType": "",
+    "level": null,
+    "durability": null,
+    "maxDurability": null,
+    "effect": "",
+    "tags": [
+      "weapon"
+    ]
   },
   {
     "id": "chipped_bottle",
     "name": "Chipped Bottle",
     "type": "weapon",
-    "description": "A broken bottle held by its cloth-wrapped neck.",
+    "slot": "weapon",
+    "rarity": "common",
     "value": 1,
-    "stackable": false,
-    "stats": {
-      "attack": 2
-    }
+    "description": "A broken bottle held by its cloth-wrapped neck.",
+    "damageMin": 2,
+    "damageMax": 2,
+    "armor": null,
+    "toolType": "",
+    "level": null,
+    "durability": null,
+    "maxDurability": null,
+    "effect": "",
+    "tags": [
+      "weapon"
+    ]
   },
   {
     "id": "patched_leather_vest",
     "name": "Patched Leather Vest",
     "type": "armor",
-    "description": "Old leather armor reinforced with mismatched patches.",
+    "slot": "armor",
+    "rarity": "common",
     "value": 10,
-    "stackable": false,
-    "stats": {
-      "defense": 3
-    }
+    "description": "Old leather armor reinforced with mismatched patches.",
+    "damageMin": null,
+    "damageMax": null,
+    "armor": 3,
+    "toolType": "",
+    "level": null,
+    "durability": null,
+    "maxDurability": null,
+    "effect": "",
+    "tags": [
+      "armor"
+    ]
   },
   {
     "id": "linen_wrap",
     "name": "Linen Wrap",
     "type": "armor",
-    "description": "Layered linen offering light protection.",
+    "slot": "armor",
+    "rarity": "common",
     "value": 4,
-    "stackable": false,
-    "stats": {
-      "defense": 1
-    }
+    "description": "Layered linen offering light protection.",
+    "damageMin": null,
+    "damageMax": null,
+    "armor": 1,
+    "toolType": "",
+    "level": null,
+    "durability": null,
+    "maxDurability": null,
+    "effect": "",
+    "tags": [
+      "armor"
+    ]
   },
   {
     "id": "minor_healing_potion",
     "name": "Minor Healing Potion",
     "type": "potion",
-    "description": "A bitter red tonic that closes small wounds.",
+    "slot": "potion",
+    "rarity": "common",
     "value": 12,
-    "stackable": true,
-    "effects": {
-      "restoreHealth": 20
-    }
+    "description": "A bitter red tonic that closes small wounds.",
+    "damageMin": null,
+    "damageMax": null,
+    "armor": null,
+    "toolType": "",
+    "level": null,
+    "durability": null,
+    "maxDurability": null,
+    "effect": "{\n  \"restoreHealth\": 20\n}",
+    "tags": [
+      "potion"
+    ]
   },
   {
     "id": "minor_focus_potion",
     "name": "Minor Focus Potion",
     "type": "potion",
-    "description": "A sharp herbal draught that clears the mind.",
+    "slot": "potion",
+    "rarity": "common",
     "value": 12,
-    "stackable": true,
-    "effects": {
-      "restoreFocus": 15
-    }
+    "description": "A sharp herbal draught that clears the mind.",
+    "damageMin": null,
+    "damageMax": null,
+    "armor": null,
+    "toolType": "",
+    "level": null,
+    "durability": null,
+    "maxDurability": null,
+    "effect": "{\n  \"restoreFocus\": 15\n}",
+    "tags": [
+      "potion"
+    ]
   },
   {
     "id": "turnip_seeds",
     "name": "Turnip Seeds",
     "type": "seed",
-    "description": "Hardy seeds suited to novice growers.",
+    "slot": "seed",
+    "rarity": "common",
     "value": 2,
-    "stackable": true,
+    "description": "Hardy seeds suited to novice growers.",
+    "damageMin": null,
+    "damageMax": null,
+    "armor": null,
+    "toolType": "",
+    "level": null,
+    "durability": null,
+    "maxDurability": null,
+    "effect": "",
+    "tags": [
+      "seed"
+    ],
     "cropId": "turnip"
   },
   {
     "id": "flax_seeds",
     "name": "Flax Seeds",
     "type": "seed",
-    "description": "Small seeds that grow into useful fiber plants.",
+    "slot": "seed",
+    "rarity": "common",
     "value": 3,
-    "stackable": true,
+    "description": "Small seeds that grow into useful fiber plants.",
+    "damageMin": null,
+    "damageMax": null,
+    "armor": null,
+    "toolType": "",
+    "level": null,
+    "durability": null,
+    "maxDurability": null,
+    "effect": "",
+    "tags": [
+      "seed"
+    ],
     "cropId": "flax"
   },
   {
     "id": "moonbean_seeds",
     "name": "Moonbean Seeds",
     "type": "seed",
-    "description": "Pale seeds that thrive beneath moonlight.",
+    "slot": "seed",
+    "rarity": "common",
     "value": 6,
-    "stackable": true,
+    "description": "Pale seeds that thrive beneath moonlight.",
+    "damageMin": null,
+    "damageMax": null,
+    "armor": null,
+    "toolType": "",
+    "level": null,
+    "durability": null,
+    "maxDurability": null,
+    "effect": "",
+    "tags": [
+      "seed"
+    ],
     "cropId": "moonbean"
   },
   {
     "id": "turnip",
     "name": "Turnip",
     "type": "food",
-    "description": "A plain but dependable root vegetable.",
+    "slot": "food",
+    "rarity": "common",
     "value": 3,
-    "stackable": true
+    "description": "A plain but dependable root vegetable.",
+    "damageMin": null,
+    "damageMax": null,
+    "armor": null,
+    "toolType": "",
+    "level": null,
+    "durability": null,
+    "maxDurability": null,
+    "effect": "",
+    "tags": [
+      "food"
+    ]
+  },
+  {
+    "id": "grain",
+    "name": "Grain",
+    "type": "food",
+    "slot": "food",
+    "rarity": "common",
+    "value": 1,
+    "description": "A handful of dry grain, useful for simple meals or trade.",
+    "damageMin": null,
+    "damageMax": null,
+    "armor": null,
+    "toolType": "",
+    "level": null,
+    "durability": null,
+    "maxDurability": null,
+    "effect": "",
+    "tags": [
+      "food"
+    ]
+  },
+  {
+    "id": "fish",
+    "name": "Fish",
+    "type": "food",
+    "slot": "food",
+    "rarity": "common",
+    "value": 2,
+    "description": "A small fresh-caught fish.",
+    "damageMin": null,
+    "damageMax": null,
+    "armor": null,
+    "toolType": "",
+    "level": null,
+    "durability": null,
+    "maxDurability": null,
+    "effect": "",
+    "tags": [
+      "food"
+    ]
+  },
+  {
+    "id": "raw_meat",
+    "name": "Raw Meat",
+    "type": "food",
+    "slot": "food",
+    "rarity": "common",
+    "value": 2,
+    "description": "Fresh raw meat from a hunted animal.",
+    "damageMin": null,
+    "damageMax": null,
+    "armor": null,
+    "toolType": "",
+    "level": null,
+    "durability": null,
+    "maxDurability": null,
+    "effect": "",
+    "tags": [
+      "food"
+    ]
+  },
+  {
+    "id": "hide",
+    "name": "Hide",
+    "type": "material",
+    "slot": "material",
+    "rarity": "common",
+    "value": 3,
+    "description": "A tough animal hide that can be cleaned and worked.",
+    "damageMin": null,
+    "damageMax": null,
+    "armor": null,
+    "toolType": "",
+    "level": null,
+    "durability": null,
+    "maxDurability": null,
+    "effect": "",
+    "tags": [
+      "material"
+    ]
   },
   {
     "id": "flax_fiber",
     "name": "Flax Fiber",
     "type": "material",
-    "description": "Clean plant fibers ready to be spun or woven.",
+    "slot": "material",
+    "rarity": "common",
     "value": 3,
-    "stackable": true
+    "description": "Clean plant fibers ready to be spun or woven.",
+    "damageMin": null,
+    "damageMax": null,
+    "armor": null,
+    "toolType": "",
+    "level": null,
+    "durability": null,
+    "maxDurability": null,
+    "effect": "",
+    "tags": [
+      "material"
+    ]
   },
   {
     "id": "moonbean",
     "name": "Moonbean",
     "type": "food",
-    "description": "A faintly luminous bean with restorative properties.",
+    "slot": "food",
+    "rarity": "common",
     "value": 7,
-    "stackable": true
+    "description": "A faintly luminous bean with restorative properties.",
+    "damageMin": null,
+    "damageMax": null,
+    "armor": null,
+    "toolType": "",
+    "level": null,
+    "durability": null,
+    "maxDurability": null,
+    "effect": "",
+    "tags": [
+      "food"
+    ]
   },
   {
     "id": "wood_scraps",
     "name": "Wood Scraps",
     "type": "material",
-    "description": "Dry pieces of workable timber.",
+    "slot": "material",
+    "rarity": "common",
     "value": 1,
-    "stackable": true
+    "description": "Dry pieces of workable timber.",
+    "damageMin": null,
+    "damageMax": null,
+    "armor": null,
+    "toolType": "",
+    "level": null,
+    "durability": null,
+    "maxDurability": null,
+    "effect": "",
+    "tags": [
+      "material"
+    ]
+  },
+  {
+    "id": "wood",
+    "name": "Wood",
+    "type": "material",
+    "slot": "material",
+    "rarity": "common",
+    "value": 2,
+    "description": "A workable length of cut wood.",
+    "damageMin": null,
+    "damageMax": null,
+    "armor": null,
+    "toolType": "",
+    "level": null,
+    "durability": null,
+    "maxDurability": null,
+    "effect": "",
+    "tags": [
+      "material"
+    ]
   },
   {
     "id": "hardwood",
     "name": "Hardwood",
     "type": "material",
-    "description": "Dense timber cut from an old-growth tree.",
+    "slot": "material",
+    "rarity": "common",
     "value": 5,
-    "stackable": true
+    "description": "Dense timber cut from an old-growth tree.",
+    "damageMin": null,
+    "damageMax": null,
+    "armor": null,
+    "toolType": "",
+    "level": null,
+    "durability": null,
+    "maxDurability": null,
+    "effect": "",
+    "tags": [
+      "material"
+    ]
   },
   {
     "id": "iron_ore",
     "name": "Iron Ore",
     "type": "material",
-    "description": "A heavy stone threaded with usable iron.",
+    "slot": "material",
+    "rarity": "common",
     "value": 4,
-    "stackable": true
+    "description": "A heavy stone threaded with usable iron.",
+    "damageMin": null,
+    "damageMax": null,
+    "armor": null,
+    "toolType": "",
+    "level": null,
+    "durability": null,
+    "maxDurability": null,
+    "effect": "",
+    "tags": [
+      "material"
+    ]
   },
   {
     "id": "wild_herbs",
     "name": "Wild Herbs",
     "type": "material",
-    "description": "A fragrant bundle used in simple remedies.",
+    "slot": "material",
+    "rarity": "common",
     "value": 2,
-    "stackable": true
+    "description": "A fragrant bundle used in simple remedies.",
+    "damageMin": null,
+    "damageMax": null,
+    "armor": null,
+    "toolType": "",
+    "level": null,
+    "durability": null,
+    "maxDurability": null,
+    "effect": "",
+    "tags": [
+      "material"
+    ]
   },
   {
     "id": "spider_silk",
     "name": "Spider Silk",
     "type": "material",
-    "description": "Strong, flexible strands harvested from a giant spider.",
+    "slot": "material",
+    "rarity": "common",
     "value": 4,
-    "stackable": true
+    "description": "Strong, flexible strands harvested from a giant spider.",
+    "damageMin": null,
+    "damageMax": null,
+    "armor": null,
+    "toolType": "",
+    "level": null,
+    "durability": null,
+    "maxDurability": null,
+    "effect": "",
+    "tags": [
+      "material"
+    ]
+  },
+  {
+    "id": "fishing_pole",
+    "name": "Fishing Pole",
+    "type": "tool",
+    "slot": "tool",
+    "rarity": "common",
+    "value": 8,
+    "description": "A simple pole and line for catching fish.",
+    "damageMin": null,
+    "damageMax": null,
+    "armor": null,
+    "toolType": "fishing_pole",
+    "level": null,
+    "durability": 12,
+    "maxDurability": 12,
+    "effect": "",
+    "tags": [
+      "tool"
+    ]
   },
   {
     "id": "boar_hide",
     "name": "Boar Hide",
     "type": "material",
-    "description": "A thick hide suitable for rugged leatherwork.",
+    "slot": "material",
+    "rarity": "common",
     "value": 5,
-    "stackable": true
+    "description": "A thick hide suitable for rugged leatherwork.",
+    "damageMin": null,
+    "damageMax": null,
+    "armor": null,
+    "toolType": "",
+    "level": null,
+    "durability": null,
+    "maxDurability": null,
+    "effect": "",
+    "tags": [
+      "material"
+    ]
   },
   {
     "id": "verdant_field_notes",
     "name": "Verdant Field Notes",
     "type": "lore",
-    "description": "A scholar's observations on the strange growth of the Expanse.",
+    "slot": "lore",
+    "rarity": "common",
     "value": 3,
-    "stackable": false,
+    "description": "A scholar's observations on the strange growth of the Expanse.",
+    "damageMin": null,
+    "damageMax": null,
+    "armor": null,
+    "toolType": "",
+    "level": null,
+    "durability": null,
+    "maxDurability": null,
+    "effect": "",
+    "tags": [
+      "lore"
+    ],
     "loreId": "verdant_field_notes"
   },
   {
     "id": "gardeners_journal_page",
     "name": "Gardener's Journal Page",
     "type": "lore",
-    "description": "A torn page describing voices beneath the garden soil.",
+    "slot": "lore",
+    "rarity": "common",
     "value": 4,
-    "stackable": false,
+    "description": "A torn page describing voices beneath the garden soil.",
+    "damageMin": null,
+    "damageMax": null,
+    "armor": null,
+    "toolType": "",
+    "level": null,
+    "durability": null,
+    "maxDurability": null,
+    "effect": "",
+    "tags": [
+      "lore"
+    ],
     "loreId": "gardeners_journal"
   },
   {
     "id": "old_rangers_map",
     "name": "Old Ranger's Map",
     "type": "lore",
-    "description": "A weathered map showing paths no longer found in the Deep Woods.",
+    "slot": "lore",
+    "rarity": "common",
     "value": 8,
-    "stackable": false,
+    "description": "A weathered map showing paths no longer found in the Deep Woods.",
+    "damageMin": null,
+    "damageMax": null,
+    "armor": null,
+    "toolType": "",
+    "level": null,
+    "durability": null,
+    "maxDurability": null,
+    "effect": "",
+    "tags": [
+      "lore"
+    ],
     "loreId": "lost_woodland_paths"
   },
   {
     "id": "stale_ale",
     "name": "Stale Ale",
     "type": "junk",
-    "description": "Flat, warm, and only technically drinkable.",
+    "slot": "junk",
+    "rarity": "common",
     "value": 1,
-    "stackable": true
+    "description": "Flat, warm, and only technically drinkable.",
+    "damageMin": null,
+    "damageMax": null,
+    "armor": null,
+    "toolType": "",
+    "level": null,
+    "durability": null,
+    "maxDurability": null,
+    "effect": "",
+    "tags": [
+      "junk"
+    ]
   },
   {
     "id": "pocket_lint",
     "name": "Pocket Lint",
     "type": "junk",
-    "description": "A mysterious collection of fibers and crumbs.",
+    "slot": "junk",
+    "rarity": "common",
     "value": 0,
-    "stackable": true
+    "description": "A mysterious collection of fibers and crumbs.",
+    "damageMin": null,
+    "damageMax": null,
+    "armor": null,
+    "toolType": "",
+    "level": null,
+    "durability": null,
+    "maxDurability": null,
+    "effect": "",
+    "tags": [
+      "junk"
+    ]
   },
   {
     "id": "bent_copper_coin",
     "name": "Bent Copper Coin",
     "type": "junk",
-    "description": "A defaced coin rejected by most merchants.",
+    "slot": "junk",
+    "rarity": "common",
     "value": 1,
-    "stackable": true
+    "description": "A defaced coin rejected by most merchants.",
+    "damageMin": null,
+    "damageMax": null,
+    "armor": null,
+    "toolType": "",
+    "level": null,
+    "durability": null,
+    "maxDurability": null,
+    "effect": "",
+    "tags": [
+      "junk"
+    ]
   }
 ]

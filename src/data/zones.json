@@ -11,26 +11,6 @@
       "abandoned_campsite",
       "broken_wagon"
     ],
-    "startingAreaId": "quiet_pond"
-  },
-  {
-    "id": "whispering_gardens",
-    "realmId": "verdant_expanse",
-    "name": "Whispering Gardens",
-    "description": "Overgrown terraces and pale glasshouses where the flowers never seem quiet.",
-    "areaIds": [
-      "whispering_gardens"
-    ],
-    "startingAreaId": "whispering_gardens"
-  },
-  {
-    "id": "deep_woods",
-    "realmId": "verdant_expanse",
-    "name": "Deep Woods",
-    "description": "A dense stretch of forest where old trails disappear beneath the canopy.",
-    "areaIds": [
-      "deep_woods"
-    ],
-    "startingAreaId": "deep_woods"
+    "startingAreaId": "abandoned_campsite"
   }
 ]

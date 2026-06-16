@@ -4,33 +4,30 @@
     "name": "Spider",
     "description": "An oversized field spider quick to defend its nest.",
     "level": 1,
-    "stats": {
-      "health": 16,
-      "damageMin": 2,
-      "damageMax": 4,
-      "defense": 0
-    },
-    "loot": [
+    "hp": 16,
+    "damageMin": 2,
+    "damageMax": 4,
+    "xp": 10,
+    "lootTable": [
       {
         "itemId": "spider_silk",
         "chance": 0.65,
         "minQuantity": 1,
         "maxQuantity": 2
       }
-    ]
+    ],
+    "guaranteedDrops": []
   },
   {
     "id": "goblin_scavenger",
     "name": "Goblin Scavenger",
     "description": "A wiry looter armed with whatever it found most recently.",
     "level": 2,
-    "stats": {
-      "health": 24,
-      "damageMin": 4,
-      "damageMax": 6,
-      "defense": 1
-    },
-    "loot": [
+    "hp": 24,
+    "damageMin": 4,
+    "damageMax": 6,
+    "xp": 20,
+    "lootTable": [
       {
         "itemId": "bent_copper_coin",
         "chance": 0.8,
@@ -43,20 +40,19 @@
         "minQuantity": 1,
         "maxQuantity": 2
       }
-    ]
+    ],
+    "guaranteedDrops": []
   },
   {
     "id": "bandit_scout",
     "name": "Bandit Scout",
     "description": "A lightly armed lookout who strikes before raising the alarm.",
     "level": 3,
-    "stats": {
-      "health": 30,
-      "damageMin": 6,
-      "damageMax": 8,
-      "defense": 2
-    },
-    "loot": [
+    "hp": 30,
+    "damageMin": 6,
+    "damageMax": 8,
+    "xp": 30,
+    "lootTable": [
       {
         "itemId": "minor_healing_potion",
         "chance": 0.2,
@@ -69,40 +65,50 @@
         "minQuantity": 1,
         "maxQuantity": 3
       }
-    ]
+    ],
+    "guaranteedDrops": []
+  },
+  {
+    "id": "wild_hog",
+    "name": "Wild Hog",
+    "description": "A snarling hog guarding its patch of ground.",
+    "level": 2,
+    "hp": 22,
+    "damageMin": 4,
+    "damageMax": 6,
+    "xp": 20,
+    "lootTable": [],
+    "guaranteedDrops": []
   },
   {
     "id": "wild_boar",
     "name": "Wild Boar",
     "description": "A territorial boar capable of a devastating charge.",
     "level": 3,
-    "stats": {
-      "health": 38,
-      "damageMin": 7,
-      "damageMax": 9,
-      "defense": 2
-    },
-    "loot": [
+    "hp": 38,
+    "damageMin": 7,
+    "damageMax": 9,
+    "xp": 30,
+    "lootTable": [
       {
         "itemId": "boar_hide",
         "chance": 0.75,
         "minQuantity": 1,
         "maxQuantity": 2
       }
-    ]
+    ],
+    "guaranteedDrops": []
   },
   {
     "id": "rabid_bear",
     "name": "Rabid Bear",
     "description": "A massive sickened bear driven into relentless aggression.",
     "level": 5,
-    "stats": {
-      "health": 72,
-      "damageMin": 11,
-      "damageMax": 15,
-      "defense": 4
-    },
-    "loot": [
+    "hp": 72,
+    "damageMin": 11,
+    "damageMax": 15,
+    "xp": 50,
+    "lootTable": [
       {
         "itemId": "boar_hide",
         "chance": 0.15,
@@ -115,6 +121,7 @@
         "minQuantity": 1,
         "maxQuantity": 2
       }
-    ]
+    ],
+    "guaranteedDrops": []
   }
 ]

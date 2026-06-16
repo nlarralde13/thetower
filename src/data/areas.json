@@ -1,11 +1,39 @@
 [
   {
     "id": "quiet_pond",
+    "name": "Pond",
+    "realmId": "verdant_expanse",
     "zoneId": "bounding_plains",
-    "name": "Quiet Pond",
-    "description": "A still pond surrounded by reeds and smooth stones.",
-    "recommendedLevel": 1,
-    "enemyIds": [],
+    "description": "The pond is larger than it looked from the camp. Reeds sway along the shoreline and ripples move across the water.",
+    "activities": [
+      {
+        "id": "fish",
+        "label": "Fish",
+        "kind": "scripted",
+        "action": "fish",
+        "params": {
+          "requiredItemId": "fishing_pole",
+          "successItemId": "fish",
+          "successChance": 0.5,
+          "noToolMessage": "You need a fishing pole before you can fish here.",
+          "failMessage": "Nothing bites.",
+          "successMessage": "You catch a fish."
+        }
+      },
+      {
+        "id": "search_shore",
+        "label": "Search Shore",
+        "kind": "scripted",
+        "action": "message",
+        "message": "The shoreline is lined with smooth stones and reeds."
+      },
+      {
+        "id": "return_camp",
+        "label": "Return to Camp",
+        "kind": "scripted",
+        "action": "returnToCamp"
+      }
+    ],
     "enemyPool": [
       {
         "enemyId": "spider",
@@ -13,17 +41,55 @@
       }
     ],
     "encounterChance": 0.12,
-    "resourceItemIds": ["wild_herbs"],
-    "connectedAreaIds": ["cluster_of_trees", "field_of_grain"],
-    "revealText": "You spot a still pond surrounded by reeds."
+    "requirements": [],
+    "recommendedLevel": 1,
+    "resourceItemIds": [
+      "wild_herbs"
+    ],
+    "connectedAreaIds": [
+      "abandoned_campsite"
+    ],
+    "revealText": "You spot a pond surrounded by reeds."
   },
   {
     "id": "cluster_of_trees",
+    "name": "Tree Line",
+    "realmId": "verdant_expanse",
     "zoneId": "bounding_plains",
-    "name": "Cluster of Trees",
-    "description": "A dense stand of trees rising from the grasslands.",
-    "recommendedLevel": 1,
-    "enemyIds": ["spider"],
+    "description": "A dark tree line stretches across the horizon. Small trees and tangled undergrowth crowd the edge of the woods.",
+    "activities": [
+      {
+        "id": "harvest_tree",
+        "label": "Harvest Tree",
+        "kind": "scripted",
+        "action": "harvestTree",
+        "params": {
+          "requiredItemId": "left_behind_axe",
+          "successItemId": "wood",
+          "successChance": 0.5,
+          "durabilityBreakChance": 0.2,
+          "breakMessage": "The left behind axe splinters apart.",
+          "noToolMessage": "You need something sharp enough to cut wood."
+        }
+      },
+      {
+        "id": "search_woods",
+        "label": "Search Woods",
+        "kind": "scripted",
+        "action": "searchWoods",
+        "params": {
+          "enemyId": "spider",
+          "guaranteedDropItemId": "spider_silk",
+          "guaranteedDropQuantity": 1
+        }
+      },
+      {
+        "id": "return_camp",
+        "label": "Return to Camp",
+        "kind": "scripted",
+        "action": "returnToCamp"
+      }
+    ],
     "enemyPool": [
       {
         "enemyId": "spider",
@@ -31,17 +97,48 @@
       }
     ],
     "encounterChance": 0.2,
-    "resourceItemIds": ["wood_scraps"],
-    "connectedAreaIds": ["quiet_pond", "abandoned_campsite"],
-    "revealText": "You discover a cluster of trees rising from the grassland."
+    "requirements": [],
+    "recommendedLevel": 1,
+    "resourceItemIds": [
+      "wood_scraps"
+    ],
+    "connectedAreaIds": [
+      "abandoned_campsite"
+    ],
+    "revealText": "You discover the tree line stretching across the grassland."
   },
   {
     "id": "field_of_grain",
+    "name": "Grain Fields",
+    "realmId": "verdant_expanse",
     "zoneId": "bounding_plains",
-    "name": "Field of Grain",
-    "description": "An overgrown field of grain sways in the wind.",
-    "recommendedLevel": 1,
-    "enemyIds": ["wild_boar"],
+    "description": "Grain stretches across the field in uneven waves, though no farmer seems to tend it.",
+    "activities": [
+      {
+        "id": "harvest_grain",
+        "label": "Harvest Grain",
+        "kind": "scripted",
+        "action": "grantItem",
+        "params": {
+          "itemId": "grain",
+          "quantity": 1,
+          "text": "You cut a handful of grain for later."
+        }
+      },
+      {
+        "id": "search_field",
+        "label": "Search Field",
+        "kind": "scripted",
+        "action": "message",
+        "message": "You comb the stalks for anything unusual."
+      },
+      {
+        "id": "return_camp",
+        "label": "Return to Camp",
+        "kind": "scripted",
+        "action": "returnToCamp"
+      }
+    ],
     "enemyPool": [
       {
         "enemyId": "wild_boar",
@@ -49,17 +146,90 @@
       }
     ],
     "encounterChance": 0.2,
-    "resourceItemIds": ["turnip_seeds"],
-    "connectedAreaIds": ["quiet_pond", "broken_wagon"],
-    "revealText": "You discover a field of grain rippling in the wind."
+    "requirements": [],
+    "recommendedLevel": 1,
+    "resourceItemIds": [
+      "turnip_seeds"
+    ],
+    "connectedAreaIds": [
+      "abandoned_campsite"
+    ],
+    "revealText": "You discover the grain fields rippling in the wind."
   },
   {
     "id": "abandoned_campsite",
+    "name": "Abandoned Camp",
+    "realmId": "verdant_expanse",
     "zoneId": "bounding_plains",
-    "name": "Abandoned Campsite",
-    "description": "A long-forgotten campsite sits undisturbed.",
-    "recommendedLevel": 1,
-    "enemyIds": ["bandit_scout"],
+    "description": "The fire is reduced to smoldering coals. Food scraps and bones are scattered near a torn makeshift bedroll. Whoever was here left in a hurry. Or maybe they never left at all.",
+    "activities": [
+      {
+        "id": "search_camp",
+        "label": "Search Camp",
+        "kind": "scripted",
+        "action": "searchCamp",
+        "params": {
+          "itemId": "left_behind_axe",
+          "text": "You find a left behind axe near the torn bedroll. It may be good for knocking down some small trees.",
+          "repeatText": "You search the camp again but find nothing useful.",
+          "onceFlag": "verdantCampSearchCompleted"
+        }
+      },
+      {
+        "id": "travel_north",
+        "label": "Travel North: Tree Line",
+        "kind": "travel",
+        "action": "travel",
+        "destinationAreaId": "cluster_of_trees",
+        "params": {
+          "ambushEnemyId": "wild_hog",
+          "ambushChance": 0.5,
+          "dropItemIds": "raw_meat,hide"
+        }
+      },
+      {
+        "id": "travel_west",
+        "label": "Travel West: Pond",
+        "kind": "travel",
+        "action": "travel",
+        "destinationAreaId": "quiet_pond",
+        "params": {
+          "ambushEnemyId": "wild_hog",
+          "ambushChance": 0.5,
+          "dropItemIds": "raw_meat,hide"
+        }
+      },
+      {
+        "id": "travel_east",
+        "label": "Travel East: Grain Fields",
+        "kind": "travel",
+        "action": "travel",
+        "destinationAreaId": "field_of_grain",
+        "params": {
+          "ambushEnemyId": "wild_hog",
+          "ambushChance": 0.5,
+          "dropItemIds": "raw_meat,hide"
+        }
+      },
+      {
+        "id": "travel_south",
+        "label": "Travel South: Mounded Hills",
+        "kind": "travel",
+        "action": "travel",
+        "destinationAreaId": "broken_wagon",
+        "params": {
+          "ambushEnemyId": "wild_hog",
+          "ambushChance": 0.5,
+          "dropItemIds": "raw_meat,hide"
+        }
+      },
+      {
+        "id": "return_tower",
+        "label": "Return to Tower",
+        "kind": "scripted",
+        "action": "returnToTower"
+      }
+    ],
     "enemyPool": [
       {
         "enemyId": "bandit_scout",
@@ -67,17 +237,47 @@
       }
     ],
     "encounterChance": 0.2,
-    "resourceItemIds": ["linen_wrap"],
-    "connectedAreaIds": ["cluster_of_trees", "broken_wagon"],
-    "revealText": "You find an abandoned campsite with an old fire ring."
+    "requirements": [],
+    "recommendedLevel": 1,
+    "resourceItemIds": [
+      "linen_wrap"
+    ],
+    "connectedAreaIds": [
+      "cluster_of_trees",
+      "quiet_pond",
+      "field_of_grain",
+      "broken_wagon"
+    ],
+    "revealText": "You find an abandoned camp with a cold fire ring."
   },
   {
     "id": "broken_wagon",
+    "name": "Mounded Hills",
+    "realmId": "verdant_expanse",
     "zoneId": "bounding_plains",
-    "name": "Broken Wagon",
-    "description": "A shattered wagon lies half buried in tall grass.",
-    "recommendedLevel": 1,
-    "enemyIds": ["goblin_scavenger"],
+    "description": "Low mounded hills rise from the plains, blocking the view beyond.",
+    "activities": [
+      {
+        "id": "explore_hills",
+        "label": "Explore Hills",
+        "kind": "scripted",
+        "action": "message",
+        "message": "You climb the mounded hills and scan the plains."
+      },
+      {
+        "id": "search_mounds",
+        "label": "Search Mounds",
+        "kind": "scripted",
+        "action": "message",
+        "message": "The mounded earth yields only stones and hard soil."
+      },
+      {
+        "id": "return_camp",
+        "label": "Return to Camp",
+        "kind": "scripted",
+        "action": "returnToCamp"
+      }
+    ],
     "enemyPool": [
       {
         "enemyId": "goblin_scavenger",
@@ -85,17 +285,44 @@
       }
     ],
     "encounterChance": 0.2,
-    "resourceItemIds": ["wood_scraps"],
-    "connectedAreaIds": ["field_of_grain", "abandoned_campsite"],
-    "revealText": "You spot a broken wagon half-buried in tall grass."
+    "requirements": [],
+    "recommendedLevel": 1,
+    "resourceItemIds": [
+      "wood_scraps"
+    ],
+    "connectedAreaIds": [
+      "abandoned_campsite"
+    ],
+    "revealText": "You spot low mounded hills rising from the plains."
   },
   {
     "id": "whispering_gardens",
-    "zoneId": "whispering_gardens",
     "name": "Whispering Gardens",
+    "realmId": "",
+    "zoneId": "",
     "description": "Overgrown terraces where flowers murmur when no breeze is blowing.",
-    "recommendedLevel": 2,
-    "enemyIds": ["spider", "bandit_scout"],
+    "activities": [
+      {
+        "id": "listen",
+        "label": "Listen Among the Blooms",
+        "kind": "event",
+        "action": "event",
+        "eventId": "garden_whispers"
+      },
+      {
+        "id": "search",
+        "label": "Search the Terraces",
+        "kind": "message",
+        "action": "message",
+        "message": "You inspect the garden terraces for clues."
+      },
+      {
+        "id": "leave",
+        "label": "Leave",
+        "kind": "leave",
+        "action": "leave"
+      }
+    ],
     "enemyPool": [
       {
         "enemyId": "spider",
@@ -107,16 +334,44 @@
       }
     ],
     "encounterChance": 0.2,
-    "resourceItemIds": ["wild_herbs", "flax_fiber", "gardeners_journal_page"],
-    "connectedAreaIds": []
+    "requirements": [],
+    "recommendedLevel": 2,
+    "resourceItemIds": [
+      "wild_herbs",
+      "flax_fiber",
+      "gardeners_journal_page"
+    ],
+    "connectedAreaIds": [],
+    "revealText": ""
   },
   {
     "id": "deep_woods",
-    "zoneId": "deep_woods",
     "name": "The Deep Woods",
+    "realmId": "",
+    "zoneId": "",
     "description": "A dense ancient forest where the trails shift beneath a dark canopy.",
-    "recommendedLevel": 4,
-    "enemyIds": ["goblin_scavenger", "wild_boar", "rabid_bear"],
+    "activities": [
+      {
+        "id": "track",
+        "label": "Track the Old Paths",
+        "kind": "event",
+        "action": "event",
+        "eventId": "lost_ranger_cache"
+      },
+      {
+        "id": "forage",
+        "label": "Forage Under the Canopy",
+        "kind": "message",
+        "action": "message",
+        "message": "You gather bark, leaves, and dry twigs."
+      },
+      {
+        "id": "leave",
+        "label": "Leave",
+        "kind": "leave",
+        "action": "leave"
+      }
+    ],
     "enemyPool": [
       {
         "enemyId": "goblin_scavenger",
@@ -132,7 +387,14 @@
       }
     ],
     "encounterChance": 0.3,
-    "resourceItemIds": ["hardwood", "iron_ore", "old_rangers_map"],
-    "connectedAreaIds": []
+    "requirements": [],
+    "recommendedLevel": 4,
+    "resourceItemIds": [
+      "hardwood",
+      "iron_ore",
+      "old_rangers_map"
+    ],
+    "connectedAreaIds": [],
+    "revealText": ""
   }
 ]

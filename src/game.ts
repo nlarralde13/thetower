@@ -18,6 +18,8 @@ export type Screen =
   | 'exploration'
   | 'event'
   | 'combat'
+  | 'crafting'
+  | 'admin'
   | 'homestead'
   | 'character';
 
@@ -28,6 +30,7 @@ export type ItemDef = {
   description: string;
   value: number;
   stackable: boolean;
+  durability?: number;
   stats?: Record<string, number>;
   effects?: Record<string, number>;
   cropId?: string;
@@ -48,6 +51,7 @@ export type RealmDef = {
   description: string;
   zoneIds: string[];
   startingZoneId: string;
+  startingAreaId: string;
 };
 
 export type ZoneDef = {
@@ -57,6 +61,18 @@ export type ZoneDef = {
   description: string;
   areaIds: string[];
   startingAreaId: string;
+};
+
+export type AreaActivityDef = {
+  id: string;
+  label: string;
+  kind: string;
+  action: string;
+  message?: string;
+  eventId?: string;
+  destinationAreaId?: string;
+  scriptId?: string;
+  params?: Record<string, string | number | boolean | null>;
 };
 
 export type AreaDef = {
@@ -71,6 +87,7 @@ export type AreaDef = {
   resourceItemIds: string[];
   connectedAreaIds: string[];
   revealText?: string;
+  activities?: AreaActivityDef[];
 };
 
 export type EnemyLoot = {
@@ -92,6 +109,7 @@ export type EnemyDef = {
     defense: number;
   };
   loot: EnemyLoot[];
+  guaranteedDrops?: { itemId: string; quantity: number }[];
 };
 
 export type CropDef = {
@@ -117,6 +135,7 @@ export type EventDef = {
   id: string;
   name: string;
   areaId: string;
+  activityId?: string;
   description: string;
   choices: EventChoiceDef[];
 };
@@ -155,6 +174,8 @@ export type HomesteadDef = {
 export type InventoryEntry = {
   itemId: string;
   quantity: number;
+  durability?: number;
+  maxDurability?: number;
 };
 
 export type CropPlotState = {
@@ -170,6 +191,8 @@ export type PlayerState = {
   backgroundId: string;
   hp: number;
   maxHp: number;
+  mp: number;
+  maxMp: number;
   xp: number;
   level: number;
   skills: Record<string, number>;
@@ -184,6 +207,10 @@ export type PlayerState = {
     areaId: string;
   };
   discoveredAreaIds: string[];
+  scriptedFlags: {
+    [key: string]: boolean | undefined;
+    verdantCampSearchCompleted: boolean;
+  };
   homestead: {
     plots: CropPlotState[];
   };
@@ -197,6 +224,7 @@ export type CombatState = {
   playerGuard: boolean;
   log: string[];
   loot: InventoryEntry[];
+  returnAreaId?: string;
 };
 
 export type EventState = {
@@ -223,28 +251,67 @@ export type GameState = {
   lastSavedAt: number;
 };
 
-export const backgrounds = backgroundsData as unknown as BackgroundDef[];
-export const realms = realmsData as RealmDef[];
-export const zones = zonesData as ZoneDef[];
-export const areas = areasData as AreaDef[];
-export const items = itemsData as ItemDef[];
-export const enemies = enemiesData as EnemyDef[];
-export const crops = cropsData as CropDef[];
-export const recipes = recipesData as RecipeDef[];
-export const events = eventsData as EventDef[];
-export const homestead = homesteadData as HomesteadDef;
+export type RuntimeContent = {
+  backgrounds?: BackgroundDef[];
+  realms?: RealmDef[];
+  zones?: ZoneDef[];
+  areas?: AreaDef[];
+  items?: ItemDef[];
+  enemies?: EnemyDef[];
+  crops?: CropDef[];
+  recipes?: RecipeDef[];
+  events?: EventDef[];
+  homestead?: HomesteadDef;
+};
+
+export let backgrounds = backgroundsData as unknown as BackgroundDef[];
+export let realms = realmsData as unknown as RealmDef[];
+export let zones = zonesData as unknown as ZoneDef[];
+export let areas = areasData as unknown as AreaDef[];
+export let items = itemsData as unknown as ItemDef[];
+export let enemies = enemiesData as unknown as EnemyDef[];
+export let crops = cropsData as CropDef[];
+export let recipes = recipesData as unknown as RecipeDef[];
+export let events = eventsData as unknown as EventDef[];
+export let homestead = homesteadData as HomesteadDef;
 
 export const STORAGE_KEY = 'tower-rpg-save-v1';
 
-export const itemById = new Map(items.map((item) => [item.id, item]));
-export const backgroundById = new Map(backgrounds.map((item) => [item.id, item]));
-export const realmById = new Map(realms.map((item) => [item.id, item]));
-export const zoneById = new Map(zones.map((item) => [item.id, item]));
-export const areaById = new Map(areas.map((item) => [item.id, item]));
-export const enemyById = new Map(enemies.map((item) => [item.id, item]));
-export const cropById = new Map(crops.map((item) => [item.id, item]));
-export const recipeById = new Map(recipes.map((item) => [item.id, item]));
-export const eventById = new Map(events.map((item) => [item.id, item]));
+export let itemById = new Map(items.map((item) => [item.id, item]));
+export let backgroundById = new Map(backgrounds.map((item) => [item.id, item]));
+export let realmById = new Map(realms.map((item) => [item.id, item]));
+export let zoneById = new Map(zones.map((item) => [item.id, item]));
+export let areaById = new Map(areas.map((item) => [item.id, item]));
+export let enemyById = new Map(enemies.map((item) => [item.id, item]));
+export let cropById = new Map(crops.map((item) => [item.id, item]));
+export let recipeById = new Map(recipes.map((item) => [item.id, item]));
+export let eventById = new Map(events.map((item) => [item.id, item]));
+
+function rebuildContentIndexes() {
+  itemById = new Map(items.map((item) => [item.id, item]));
+  backgroundById = new Map(backgrounds.map((item) => [item.id, item]));
+  realmById = new Map(realms.map((item) => [item.id, item]));
+  zoneById = new Map(zones.map((item) => [item.id, item]));
+  areaById = new Map(areas.map((item) => [item.id, item]));
+  enemyById = new Map(enemies.map((item) => [item.id, item]));
+  cropById = new Map(crops.map((item) => [item.id, item]));
+  recipeById = new Map(recipes.map((item) => [item.id, item]));
+  eventById = new Map(events.map((item) => [item.id, item]));
+}
+
+export function setRuntimeContent(content: RuntimeContent) {
+  if (content.backgrounds) backgrounds = content.backgrounds;
+  if (content.realms) realms = content.realms;
+  if (content.zones) zones = content.zones;
+  if (content.areas) areas = content.areas;
+  if (content.items) items = content.items;
+  if (content.enemies) enemies = content.enemies;
+  if (content.crops) crops = content.crops;
+  if (content.recipes) recipes = content.recipes;
+  if (content.events) events = content.events;
+  if (content.homestead) homestead = content.homestead;
+  rebuildContentIndexes();
+}
 
 export const getItem = (itemId: string) => itemById.get(itemId);
 export const getBackground = (backgroundId: string) => backgroundById.get(backgroundId);
@@ -255,16 +322,38 @@ export const getCrop = (cropId: string) => cropById.get(cropId);
 export const getEvent = (eventId: string) => eventById.get(eventId);
 export const getRealm = (realmId: string) => realmById.get(realmId);
 
+export function getRealmStartLocation(realmId: string) {
+  const realm = realmById.get(realmId) ?? realms[0] ?? null;
+  if (!realm) return null;
+  const startArea = realm.startingAreaId ? areaById.get(realm.startingAreaId) ?? null : null;
+  const startZone =
+    (startArea ? zoneById.get(startArea.zoneId) ?? null : null) ??
+    (realm.startingZoneId ? zoneById.get(realm.startingZoneId) ?? null : null) ??
+    getAvailableZones(realm.id)[0] ??
+    zones[0] ??
+    null;
+  const area =
+    startArea && startZone && startArea.zoneId === startZone.id
+      ? startArea
+      : (startZone ? areaById.get(startZone.startingAreaId) ?? getAvailableAreas(startZone.id)[0] ?? areas[0] ?? null : null);
+  return {
+    realm,
+    zone: startZone,
+    area
+  };
+}
+
 export function createNewGame(): GameState {
-  const realm = realms[0];
-  const zone = zoneById.get(realm.startingZoneId) ?? zones[0];
-  const area = areaById.get(zone.startingAreaId) ?? areas[0];
+  const realm = realms[0] ?? null;
+  const start = realm ? getRealmStartLocation(realm.id) : null;
+  const zone = start?.zone ?? zones[0] ?? null;
+  const area = start?.area ?? (zone ? areaById.get(zone.startingAreaId) ?? getAvailableAreas(zone.id)[0] ?? areas[0] ?? null : areas[0] ?? null);
   return {
     screen: 'character-creation',
     message: 'Create your character.',
-    selectedRealmId: realm.id,
-    selectedZoneId: zone.id,
-    selectedAreaId: area.id,
+    selectedRealmId: realm?.id ?? '',
+    selectedZoneId: zone?.id ?? '',
+    selectedAreaId: area?.id ?? '',
     pendingEvent: null,
     combat: null,
     player: null,
@@ -279,8 +368,10 @@ export function createNewGame(): GameState {
 
 export function newPlayer(name: string, backgroundId: string): PlayerState {
   const background = backgroundById.get(backgroundId) ?? backgrounds[0];
-  const realm = realmById.get('verdant_expanse') ?? realms[0];
-  const zone = zoneById.get(realm.startingZoneId) ?? zones[0];
+  const realm = realmById.get('verdant_expanse') ?? realms[0] ?? null;
+  const start = realm ? getRealmStartLocation(realm.id) : null;
+  const zone = start?.zone ?? zones[0] ?? null;
+  const area = start?.area ?? (zone ? areaById.get(zone.startingAreaId) ?? getAvailableAreas(zone.id)[0] ?? areas[0] ?? null : areas[0] ?? null);
   const baseStats = {
     strength: 1,
     dexterity: 1,
@@ -303,6 +394,8 @@ export function newPlayer(name: string, backgroundId: string): PlayerState {
     backgroundId,
     hp: 24 + (skills.endurance ?? 0) * 2,
     maxHp: 24 + (skills.endurance ?? 0) * 2,
+    mp: 10 + (skills.focus ?? 0) * 2,
+    maxMp: 10 + (skills.focus ?? 0) * 2,
     xp: 0,
     level: 1,
     skills,
@@ -312,11 +405,14 @@ export function newPlayer(name: string, backgroundId: string): PlayerState {
       armorId
     },
     location: {
-      realmId: realm.id,
-      zoneId: zone.id,
-      areaId: zone.startingAreaId
+      realmId: realm?.id ?? '',
+      zoneId: zone?.id ?? '',
+      areaId: area?.id ?? ''
     },
-    discoveredAreaIds: [],
+    discoveredAreaIds: area?.id ? [area.id] : [],
+    scriptedFlags: {
+      verdantCampSearchCompleted: false
+    },
     homestead: {
       plots: [
         { slotId: 'plot-1', cropId: null, plantedAt: null, readyAt: null, quantity: 0 },
@@ -330,13 +426,30 @@ export function clone<T>(value: T): T {
   return structuredClone(value);
 }
 
+export function createInventoryEntry(itemId: string, quantity: number): InventoryEntry {
+  const item = getItem(itemId);
+  if (item?.durability && quantity === 1) {
+    return {
+      itemId,
+      quantity,
+      durability: item.durability,
+      maxDurability: item.durability
+    };
+  }
+  return { itemId, quantity };
+}
+
 export function addItem(inventory: InventoryEntry[], itemId: string, quantity: number) {
   const next = clone(inventory);
+  const item = getItem(itemId);
   const existing = next.find((entry) => entry.itemId === itemId);
   if (existing) {
+    if (item && item.stackable === false) {
+      return next.filter((entry) => entry.quantity > 0);
+    }
     existing.quantity += quantity;
   } else {
-    next.push({ itemId, quantity });
+    next.push(createInventoryEntry(itemId, quantity));
   }
   return next.filter((entry) => entry.quantity > 0);
 }
@@ -394,29 +507,36 @@ export function loadGame(): GameState | null {
 }
 
 export function normalizeGameState(state: GameState): GameState {
-  const realm = realmById.get(state.selectedRealmId) ?? realms[0];
+  const realm = realmById.get(state.selectedRealmId) ?? realms[0] ?? null;
   const selectedArea = areaById.get(state.selectedAreaId);
+  const realmStart = realm ? getRealmStartLocation(realm.id) : null;
+  const fallbackZone = zones[0] ?? null;
   const selectedZone =
     zoneById.get(state.selectedZoneId) ??
     (selectedArea ? zoneById.get(selectedArea.zoneId) : undefined) ??
-    zoneById.get(realm.startingZoneId) ??
-    zones[0];
+    realmStart?.zone ??
+    fallbackZone;
   const area =
-    selectedArea && selectedArea.zoneId === selectedZone.id
+    selectedZone && selectedArea && selectedArea.zoneId === selectedZone.id
       ? selectedArea
-      : areaById.get(selectedZone.startingAreaId) ?? areas[0];
+      : selectedZone && realmStart?.area && realmStart.area.zoneId === selectedZone.id
+        ? realmStart.area
+      : selectedZone
+        ? areaById.get(selectedZone.startingAreaId) ?? getAvailableAreas(selectedZone.id)[0] ?? areas[0] ?? null
+        : areas[0] ?? null;
   const discoveredAreaIds = Array.from(
     new Set([
       ...(state.player?.discoveredAreaIds ?? []),
-      ...(['exploration', 'combat', 'event'].includes(state.screen) ? [area.id] : [])
+      ...(state.player ? [state.player.location.areaId] : []),
+      ...(['exploration', 'combat', 'event'].includes(state.screen) && area?.id ? [area.id] : [])
     ])
   ).filter((areaId) => !!areaById.get(areaId));
 
   return {
     ...state,
-    selectedRealmId: realm.id,
-    selectedZoneId: selectedZone.id,
-    selectedAreaId: area.id,
+    selectedRealmId: realm?.id ?? '',
+    selectedZoneId: selectedZone?.id ?? '',
+    selectedAreaId: area?.id ?? '',
     returnBand: state.returnBand ?? {
       unlocked: !!state.player,
       cooldownSeconds: 300,
@@ -425,12 +545,18 @@ export function normalizeGameState(state: GameState): GameState {
     player: state.player
       ? {
           ...state.player,
+          mp: state.player.mp ?? 10 + (state.player.skills.focus ?? 0) * 2,
+          maxMp: state.player.maxMp ?? 10 + (state.player.skills.focus ?? 0) * 2,
           location: {
-            realmId: realm.id,
-            zoneId: selectedZone.id,
-            areaId: area.id
+            realmId: realm?.id ?? '',
+            zoneId: selectedZone?.id ?? '',
+            areaId: area?.id ?? ''
           },
-          discoveredAreaIds
+          discoveredAreaIds,
+          scriptedFlags: {
+            ...state.player.scriptedFlags,
+            verdantCampSearchCompleted: state.player.scriptedFlags?.verdantCampSearchCompleted ?? false
+          }
         }
       : state.player
   };
@@ -444,11 +570,29 @@ export function formatInventory(inventory: InventoryEntry[]) {
 }
 
 export function getAvailableZones(realmId: string) {
-  return zones.filter((zone) => zone.realmId === realmId);
+  const realm = realmById.get(realmId);
+  const byRealm = zones.filter((zone) => zone.realmId === realmId);
+  if (!realm?.zoneIds?.length) return byRealm;
+  const byId = realm.zoneIds.map((zoneId) => getZone(zoneId)).filter((zone): zone is ZoneDef => !!zone);
+  const seen = new Set<string>();
+  return [...byId, ...byRealm].filter((zone) => {
+    if (seen.has(zone.id)) return false;
+    seen.add(zone.id);
+    return true;
+  });
 }
 
 export function getAvailableAreas(zoneId: string) {
-  return areas.filter((area) => area.zoneId === zoneId);
+  const zone = getZone(zoneId);
+  const byZone = areas.filter((area) => area.zoneId === zoneId);
+  if (!zone?.areaIds?.length) return byZone;
+  const byId = zone.areaIds.map((areaId) => getArea(areaId)).filter((area): area is AreaDef => !!area);
+  const seen = new Set<string>();
+  return [...byId, ...byZone].filter((area) => {
+    if (seen.has(area.id)) return false;
+    seen.add(area.id);
+    return true;
+  });
 }
 
 export function isAreaDiscovered(player: PlayerState | null, areaId: string) {
@@ -473,6 +617,13 @@ export function getAreaEvents(areaId: string) {
 }
 
 export function createEnemyState(enemyId: string) {
+  return createEnemyStateWithContext(enemyId);
+}
+
+export function createEnemyStateWithContext(
+  enemyId: string,
+  context?: { loot?: InventoryEntry[]; returnAreaId?: string }
+) {
   const enemy = getEnemy(enemyId);
   if (!enemy) {
     throw new Error(`Unknown enemy: ${enemyId}`);
@@ -484,7 +635,8 @@ export function createEnemyState(enemyId: string) {
     enemyGuard: false,
     playerGuard: false,
     log: [`${enemy.name} appears.`],
-    loot: [] as InventoryEntry[]
+    loot: context?.loot ?? [],
+    returnAreaId: context?.returnAreaId
   } satisfies CombatState;
 }
 

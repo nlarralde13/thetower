@@ -1,1 +1,1 @@
-{"root":["./src/App.tsx","./src/game.ts","./src/main.tsx"],"version":"5.9.3"}
+{"root":["./src/App.tsx","./src/adminDrafts.ts","./src/game.ts","./src/main.tsx","./src/useAdminDrafts.ts","./src/useAppPathname.ts","./src/useThemeMode.ts","./src/components/AdminScreen.tsx"],"version":"5.9.3"}
