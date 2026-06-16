@@ -23,6 +23,8 @@ import {
   itemCount,
   loadGame,
   newPlayer,
+  getTravelRoute,
+  expeditions,
   realms,
   recipes,
   isAreaDiscovered,
@@ -46,10 +48,16 @@ import {
   type Screen,
   type CropPlotState,
   type EventState,
+  type ExpeditionDef,
+  type TravelRouteDef,
+  type TravelStyleDef,
+  type TravelRouteEventDef,
+  type TravelStyleId,
   type RecipeDef,
   xpToNextLevel
 } from './game';
 import { AdminScreen } from './components/AdminScreen';
+import { NodesScreen } from './components/NodesScreen';
 import { buildRuntimeContentFromDrafts } from './adminDrafts';
 import { useAdminDrafts } from './useAdminDrafts';
 import { useAppPathname } from './useAppPathname';
@@ -127,6 +135,14 @@ function getRecipeMissingIngredients(recipe: RecipeDef, inventory: InventoryEntr
     .filter((ingredient) => ingredient.missing > 0);
 }
 
+function getTravelStyle(route: TravelRouteDef, styleId: TravelStyleId) {
+  return route.styles.find((style) => style.id === styleId) ?? route.styles[0] ?? null;
+}
+
+function rollTravelEvent(style: TravelStyleDef) {
+  return weightedPick(style.eventPool);
+}
+
 function App() {
   const [state, setState] = useState<GameState>(() => {
     const loaded = loadGame() ?? createNewGame();
@@ -145,7 +161,7 @@ function App() {
     error: adminSyncError,
     contentStatusLabel: adminContentStatusLabel
   } = useAdminDrafts();
-  const { navigate, isAdminRoute } = useAppPathname();
+  const { navigate, isAdminRoute, isNodesRoute } = useAppPathname();
   const { theme, isDark, toggleTheme } = useThemeMode();
   const [, setClockTick] = useState(0);
 
@@ -263,6 +279,49 @@ function App() {
     }));
   };
 
+  const selectExpedition = (expeditionId: string) => {
+    const expedition = expeditions.find((entry) => entry.id === expeditionId);
+    if (!expedition) return;
+    const realm = getRealm(expedition.realmId);
+    const zone = getZone(expedition.zoneId);
+    const area = getArea(expedition.startingAreaId);
+    if (!realm || !zone || !area || !state.player) {
+      commit((current) => ({
+        ...current,
+        message: 'That expedition is not ready yet.'
+      }));
+      return;
+    }
+    commit((current) => {
+      const nextPlayer = current.player
+        ? discoverArea({
+            ...current.player,
+            location: {
+              realmId: realm.id,
+              zoneId: zone.id,
+              areaId: area.id
+            }
+          }, area.id)
+        : current.player;
+      return {
+        ...current,
+        selectedRealmId: realm.id,
+        selectedZoneId: zone.id,
+        selectedAreaId: area.id,
+        pendingTravel: null,
+        pendingEvent: null,
+        combat: null,
+        player: nextPlayer,
+        returnBand: {
+          ...current.returnBand,
+          unlocked: true
+        },
+        screen: 'exploration',
+        message: `Expedition started: ${expedition.name}.`
+      };
+    });
+  };
+
   const selectZone = (zoneId: string) => {
     const zone = getZone(zoneId);
     if (!zone) return;
@@ -281,6 +340,27 @@ function App() {
     const area = getArea(areaId);
     if (!area) return;
     if (!state.player || !isAreaDiscovered(state.player, areaId)) return;
+    const currentAreaId = state.player.location.areaId;
+    if (currentAreaId && currentAreaId !== areaId) {
+      const route = getTravelRoute(currentAreaId, areaId) ?? getTravelRoute(areaId, currentAreaId);
+      if (route) {
+        commit((current) => ({
+          ...current,
+          pendingTravel: {
+            fromAreaId: currentAreaId,
+            toAreaId: areaId
+          },
+          screen: 'travel',
+          message: `Traveling toward ${area.name}.`
+        }));
+        return;
+      }
+      commit((current) => ({
+        ...current,
+        message: 'No road links those places yet.'
+      }));
+      return;
+    }
     const zone = getZone(area.zoneId);
     const realm = zone ? getRealm(zone.realmId) : undefined;
     commit((current) => ({
@@ -298,25 +378,30 @@ function App() {
             }
           }
         : current.player,
+      pendingTravel: null,
       screen: 'exploration',
       message: 'Exploring the area.'
       }));
   };
 
-  const placePlayerInArea = (areaId: string, message: string) => {
+  const placePlayerInArea = (areaId: string, message: string, updatePlayer?: (player: PlayerState) => PlayerState) => {
     const area = getArea(areaId);
     if (!area || !state.player) return;
     const zone = getZone(area.zoneId);
     const realm = zone ? getRealm(zone.realmId) : undefined;
     commit((current) => {
-      const nextPlayer = current.player
+      let nextPlayer = current.player
         ? discoverArea(current.player, area.id)
         : current.player;
+      if (nextPlayer && updatePlayer) {
+        nextPlayer = updatePlayer(nextPlayer);
+      }
       return {
         ...current,
         selectedRealmId: realm?.id ?? current.selectedRealmId,
         selectedZoneId: zone?.id ?? current.selectedZoneId,
         selectedAreaId: area.id,
+        pendingTravel: null,
         player: nextPlayer
           ? {
               ...nextPlayer,
@@ -331,8 +416,53 @@ function App() {
         pendingEvent: null,
         combat: null,
         message
-      };
+        };
     });
+  };
+
+  const runTravel = (styleId: TravelStyleId) => {
+    if (!state.player || !state.pendingTravel) return;
+    const fromArea = getArea(state.pendingTravel.fromAreaId);
+    const destinationArea = getArea(state.pendingTravel.toAreaId);
+    if (!fromArea || !destinationArea) return;
+    const route = getTravelRoute(fromArea.id, destinationArea.id) ?? getTravelRoute(destinationArea.id, fromArea.id);
+    if (!route) return;
+    const style = getTravelStyle(route, styleId);
+    if (!style) return;
+
+    let nextInventory = state.player.inventory;
+    const messages: string[] = [];
+
+    for (let step = 0; step < Math.max(1, style.steps); step += 1) {
+      const event = rollTravelEvent(style);
+      if (!event) continue;
+      if (event.kind === 'none') continue;
+      if (event.kind === 'message') {
+        messages.push(event.message ?? event.label);
+        continue;
+      }
+      if (event.kind === 'reward') {
+        for (const reward of event.rewards ?? []) {
+          nextInventory = addItem(nextInventory, reward.itemId, reward.quantity);
+        }
+        messages.push(event.message ?? event.label);
+        continue;
+      }
+      if (event.kind === 'combat') {
+        const loot = (event.rewards ?? []).map((reward) => ({ itemId: reward.itemId, quantity: reward.quantity }));
+        beginCombat(event.enemyId ?? 'wild_hog', destinationArea.id, loot);
+        commit((current) => ({
+          ...current,
+          pendingTravel: null,
+          player: current.player ? { ...current.player, inventory: nextInventory } : current.player,
+          message: event.message ?? `You are ambushed on the road to ${destinationArea.name}.`
+        }));
+        return;
+      }
+    }
+
+    const travelMessage = messages[messages.length - 1] ?? `You travel to ${destinationArea.name}.`;
+    placePlayerInArea(destinationArea.id, travelMessage, (player) => ({ ...player, inventory: nextInventory }));
   };
 
   const beginCombat = (enemyId: string, returnAreaId: string, loot: InventoryEntry[] = []) => {
@@ -836,13 +966,34 @@ function App() {
   };
 
   const screen = state.screen;
+  const travelRoute =
+    state.pendingTravel
+      ? getTravelRoute(state.pendingTravel.fromAreaId, state.pendingTravel.toAreaId) ??
+        getTravelRoute(state.pendingTravel.toAreaId, state.pendingTravel.fromAreaId)
+      : null;
   const showAdminRoute = isAdminRoute;
+  const showNodesRoute = isNodesRoute;
   const goGameHome = () => navigate('/');
   const goSettings = () => setSettingsOpen((current) => !current);
 
+  const shellClass = showAdminRoute ? 'app-shell admin-app-shell' : showNodesRoute ? 'app-shell nodes-app-shell' : 'app-shell';
+
   return (
-    <div className={showAdminRoute ? 'app-shell admin-app-shell' : 'app-shell'}>
-      {showAdminRoute ? (
+    <div className={shellClass}>
+      {showNodesRoute ? (
+        <main className="nodes-route-shell">
+          <NodesScreen
+            drafts={adminDrafts}
+            syncState={adminSyncState}
+            syncError={adminSyncError}
+            contentStatusLabel={adminContentStatusLabel}
+            themeMode={theme}
+            onToggleTheme={toggleTheme}
+            onBackToGame={goGameHome}
+            onBackToAdmin={() => navigate('/admin')}
+          />
+        </main>
+      ) : showAdminRoute ? (
         <main className="admin-route-shell">
           <AdminScreen
             drafts={adminDrafts}
@@ -850,6 +1001,7 @@ function App() {
             onReset={resetAdminDrafts}
             onReload={refreshAdminDrafts}
             onBack={goGameHome}
+            onOpenNodes={() => navigate('/nodes')}
             themeMode={theme}
             onToggleTheme={toggleTheme}
             syncState={adminSyncState}
@@ -920,7 +1072,7 @@ function App() {
             )}
 
             {screen === 'tower' && (
-              <TowerScreen realms={realms} onSelectRealm={selectRealm} onBack={goVillage} />
+              <TowerScreen expeditions={expeditions} player={state.player} onSelectExpedition={selectExpedition} onBack={goVillage} />
             )}
 
             {screen === 'zone-select' && selectedRealm && (
@@ -939,6 +1091,16 @@ function App() {
                 onSelectArea={selectArea}
                 onExploreZone={exploreZone}
                 onBack={() => commit((current) => ({ ...current, screen: 'zone-select' }))}
+              />
+            )}
+
+            {screen === 'travel' && state.pendingTravel && travelRoute && (
+              <TravelScreen
+                fromArea={getArea(state.pendingTravel.fromAreaId)}
+                destinationArea={getArea(state.pendingTravel.toAreaId)}
+                route={travelRoute}
+                onChooseStyle={runTravel}
+                onBack={() => commit((current) => ({ ...current, screen: 'area-select', pendingTravel: null }))}
               />
             )}
 
@@ -1070,7 +1232,61 @@ function VillageScreen(props: {
   );
 }
 
-function TowerScreen(props: { realms: typeof realms; onSelectRealm: (id: string) => void; onBack: () => void }) {
+function TowerScreen(props: {
+  expeditions: ExpeditionDef[];
+  player: PlayerState | null;
+  onSelectExpedition: (id: string) => void;
+  onBack: () => void;
+}) {
+  return (
+    <section className="stack">
+      <div className="section-heading">
+        <span className="eyebrow">Expedition Board</span>
+        <h2>Tower</h2>
+      </div>
+      {props.expeditions.length > 0 ? (
+        props.expeditions.map((expedition) => {
+          const realm = getRealm(expedition.realmId);
+          const zone = getZone(expedition.zoneId);
+          const startArea = getArea(expedition.startingAreaId);
+          const underLevel = !!props.player && props.player.level < expedition.recommendedLevel;
+          return (
+            <button key={expedition.id} className="card" onClick={() => props.onSelectExpedition(expedition.id)}>
+              <span className="eyebrow">Expedition</span>
+              <strong>{expedition.name}</strong>
+              <div className="muted">{expedition.description}</div>
+              <div className="chips">
+                <span className="chip">Level {expedition.recommendedLevel}</span>
+                {realm ? <span className="chip">{realm.name}</span> : null}
+                {zone ? <span className="chip">{zone.name}</span> : null}
+                {startArea ? <span className="chip">{startArea.name}</span> : null}
+              </div>
+              {underLevel ? <div className="muted">Recommended for a higher-level character.</div> : null}
+              {expedition.requirements.length > 0 ? (
+                <div className="muted">
+                  Requires {expedition.requirements.map((requirement) => requirement.label ?? requirement.id ?? requirement.kind).join(', ')}
+                </div>
+              ) : null}
+              {expedition.rewardPreview.length > 0 ? (
+                <div className="muted">
+                  Potential rewards: {expedition.rewardPreview.map((reward) => `${getItem(reward.itemId)?.name ?? reward.itemId} x${reward.quantity}`).join(', ')}
+                </div>
+              ) : null}
+            </button>
+          );
+        })
+      ) : (
+        <div className="card">
+          <strong>No expeditions posted</strong>
+          <div className="muted">Create an expedition in the admin builder to post it here.</div>
+        </div>
+      )}
+      <button className="ghost" onClick={props.onBack}>Back</button>
+    </section>
+  );
+}
+
+function RealmSelectScreen(props: { realms: typeof realms; onSelectRealm: (id: string) => void; onBack: () => void }) {
   return (
     <section className="stack">
       <div className="section-heading">
@@ -1159,6 +1375,38 @@ function AreaSelectScreen(props: {
   );
 }
 
+function TravelScreen(props: {
+  fromArea: ReturnType<typeof getArea>;
+  destinationArea: ReturnType<typeof getArea>;
+  route: TravelRouteDef;
+  onChooseStyle: (styleId: TravelStyleId) => void;
+  onBack: () => void;
+}) {
+  const destinationName = props.destinationArea?.name ?? 'destination';
+  return (
+    <section className="stack">
+      <div className="section-heading">
+        <span className="eyebrow">Travel</span>
+        <h2>{props.fromArea?.name ?? 'Road'} to {destinationName}</h2>
+      </div>
+      <div className="card">
+        <strong>{props.route.label}</strong>
+        <div className="muted">Choose a pace for the road between areas. Faster trips are riskier; careful trips take a little longer.</div>
+      </div>
+      <div className="stack">
+        {props.route.styles.map((style) => (
+          <button key={style.id} className="card" onClick={() => props.onChooseStyle(style.id)}>
+            <strong>{style.label}</strong>
+            <div className="muted">{style.steps} step{style.steps === 1 ? '' : 's'} through the route</div>
+            <div className="muted">{describeTravelPool(style)}</div>
+          </button>
+        ))}
+      </div>
+      <button className="ghost" onClick={props.onBack}>Back</button>
+    </section>
+  );
+}
+
 function ExplorationScreen(props: {
   area: AreaDef;
   activities: AreaActivityDef[];
@@ -1183,6 +1431,14 @@ function ExplorationScreen(props: {
       <button className="ghost" onClick={props.onBack}>Back</button>
     </section>
   );
+}
+
+function describeTravelPool(style: TravelStyleDef) {
+  const noneWeight = style.eventPool.filter((entry) => entry.kind === 'none').reduce((sum, entry) => sum + entry.weight, 0);
+  const messageWeight = style.eventPool.filter((entry) => entry.kind === 'message').reduce((sum, entry) => sum + entry.weight, 0);
+  const combatWeight = style.eventPool.filter((entry) => entry.kind === 'combat').reduce((sum, entry) => sum + entry.weight, 0);
+  const rewardWeight = style.eventPool.filter((entry) => entry.kind === 'reward').reduce((sum, entry) => sum + entry.weight, 0);
+  return `Safe ${noneWeight} · Narrative ${messageWeight} · Rewards ${rewardWeight} · Combat ${combatWeight}`;
 }
 
 function EventScreen(props: { event: EventDef; onChoice: (choice: EventChoiceDef) => void; onBack: () => void }) {

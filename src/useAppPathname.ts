@@ -30,6 +30,7 @@ export function useAppPathname() {
   return {
     pathname,
     navigate,
-    isAdminRoute: pathname === '/admin' || pathname.startsWith('/admin/')
+    isAdminRoute: pathname === '/admin' || pathname.startsWith('/admin/'),
+    isNodesRoute: pathname === '/nodes' || pathname.startsWith('/nodes/')
   };
 }

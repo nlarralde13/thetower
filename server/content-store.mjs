@@ -2,7 +2,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import initSqlJs from 'sql.js';
 
-const mutableKinds = ['realms', 'zones', 'areas', 'items', 'enemies', 'recipes', 'events'];
+const mutableKinds = ['realms', 'zones', 'areas', 'items', 'enemies', 'recipes', 'events', 'expeditions'];
 const sourceFileMap = {
   realms: 'realms.json',
   zones: 'zones.json',
@@ -10,7 +10,8 @@ const sourceFileMap = {
   items: 'items.json',
   enemies: 'enemies.json',
   recipes: 'recipes.json',
-  events: 'events.json'
+  events: 'events.json',
+  expeditions: 'expeditions.json'
 };
 
 const dbFilePath = path.join(process.cwd(), '.thetower-content.sqlite');
@@ -146,6 +147,64 @@ function defaultAreaActivities() {
   };
 }
 
+function defaultTravelStyles(destinationAreaName) {
+  return [
+    {
+      id: 'careful',
+      label: 'Travel Carefully',
+      steps: 2,
+      eventPool: [
+        { id: 'safe_passage', label: 'Safe passage', weight: 70, kind: 'none' },
+        { id: 'watchful_note', label: 'Watchful note', weight: 20, kind: 'message', message: `You keep to the edge of the road toward ${destinationAreaName}.` },
+        { id: 'road_ambush', label: 'Road ambush', weight: 10, kind: 'combat', enemyId: 'wild_hog' }
+      ]
+    },
+    {
+      id: 'normal',
+      label: 'Travel Normally',
+      steps: 1,
+      eventPool: [
+        { id: 'straight_path', label: 'Straight path', weight: 55, kind: 'none' },
+        { id: 'passing_thought', label: 'Passing thought', weight: 20, kind: 'message', message: `You keep moving toward ${destinationAreaName}.` },
+        { id: 'roadside_attack', label: 'Roadside attack', weight: 25, kind: 'combat', enemyId: 'wild_hog' }
+      ]
+    },
+    {
+      id: 'quick',
+      label: 'Travel Quickly',
+      steps: 1,
+      eventPool: [
+        { id: 'fast_route', label: 'Fast route', weight: 40, kind: 'none' },
+        { id: 'brisk_push', label: 'Brisk push', weight: 20, kind: 'message', message: `You hurry toward ${destinationAreaName}.` },
+        { id: 'open_ambush', label: 'Open ambush', weight: 40, kind: 'combat', enemyId: 'wild_hog' }
+      ]
+    }
+  ];
+}
+
+function defaultTravelRoutes(areaId, connectedAreaIds, areaNameById) {
+  return connectedAreaIds.map((destinationAreaId) => {
+    const destinationAreaName = areaNameById.get(destinationAreaId) ?? destinationAreaId;
+    return {
+      id: `travel_${areaId}_to_${destinationAreaId}`,
+      destinationAreaId,
+      label: `Travel to ${destinationAreaName}`,
+      styles: defaultTravelStyles(destinationAreaName)
+    };
+  });
+}
+
+function ensureTravelRoutes(drafts) {
+  const areaNameById = new Map((drafts.areas ?? []).map((area) => [area.id, area.name]));
+  return {
+    ...drafts,
+    areas: (drafts.areas ?? []).map((area) => ({
+      ...area,
+      travelRoutes: area.travelRoutes?.length ? area.travelRoutes : defaultTravelRoutes(area.id, area.connectedAreaIds ?? [], areaNameById)
+    }))
+  };
+}
+
 function toDraftsFromSource() {
   const realms = readJsonFile(sourceFileMap.realms);
   const zones = readJsonFile(sourceFileMap.zones);
@@ -154,6 +213,7 @@ function toDraftsFromSource() {
   const enemies = readJsonFile(sourceFileMap.enemies);
   const recipes = readJsonFile(sourceFileMap.recipes);
   const events = readJsonFile(sourceFileMap.events);
+  const expeditions = readJsonFile(sourceFileMap.expeditions);
   const realmByZoneId = new Map(zones.map((zone) => [zone.id, zone.realmId]));
   const zoneById = new Map(zones.map((zone) => [zone.id, zone]));
   const areaById = new Map(areas.map((area) => [area.id, area]));
@@ -195,6 +255,7 @@ function toDraftsFromSource() {
       recommendedLevel: area.recommendedLevel ?? 1,
       resourceItemIds: area.resourceItemIds ?? [],
       connectedAreaIds: area.connectedAreaIds ?? [],
+      travelRoutes: area.travelRoutes ?? defaultTravelRoutes(area.id, area.connectedAreaIds ?? [], new Map(areas.map((entry) => [entry.id, entry.name]))),
       revealText: area.revealText ?? ''
     })),
     items: items.map((item) => ({
@@ -247,6 +308,18 @@ function toDraftsFromSource() {
       description: event.description ?? '',
       choices: event.choices ?? []
     })),
+    expeditions: expeditions.map((expedition) => ({
+      id: expedition.id,
+      name: expedition.name,
+      description: expedition.description ?? '',
+      realmId: expedition.realmId ?? '',
+      zoneId: expedition.zoneId ?? '',
+      startingAreaId: expedition.startingAreaId ?? '',
+      recommendedLevel: expedition.recommendedLevel ?? 1,
+      requirements: expedition.requirements ?? [],
+      travelPool: expedition.travelPool ?? [],
+      rewardPreview: expedition.rewardPreview ?? []
+    })),
     updatedAt: Date.now()
   };
 }
@@ -286,7 +359,7 @@ function readCollection(db, kind) {
 function readStoredDrafts(db) {
   const next = {};
   for (const kind of mutableKinds) {
-    next[kind] = readCollection(db, kind) ?? [];
+    next[kind] = readCollection(db, kind);
   }
   return next;
 }
@@ -345,19 +418,20 @@ export async function createContentStore() {
       const sourceDrafts = toDraftsFromSource();
       const merged = { updatedAt: Date.now() };
       for (const kind of mutableKinds) {
-        merged[kind] = dbDrafts[kind] !== undefined ? dbDrafts[kind] : sourceDrafts[kind];
+        merged[kind] = dbDrafts[kind] !== null ? dbDrafts[kind] : sourceDrafts[kind];
       }
-      return merged;
+      return ensureTravelRoutes(merged);
     },
     replaceContent(drafts) {
-      upsertCollections(db, drafts);
+      const normalized = ensureTravelRoutes(drafts);
+      upsertCollections(db, normalized);
       return {
-        ...drafts,
+        ...normalized,
         updatedAt: Date.now()
       };
     },
     resetContent() {
-      const drafts = toDraftsFromSource();
+      const drafts = ensureTravelRoutes(toDraftsFromSource());
       upsertCollections(db, drafts);
       return {
         ...drafts,

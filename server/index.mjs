@@ -25,7 +25,7 @@ function normalizeContentPayload(payload) {
   if (!payload || typeof payload !== 'object') {
     throw new Error('Invalid payload');
   }
-  const mutableKinds = ['realms', 'zones', 'areas', 'items', 'enemies', 'recipes', 'events'];
+  const mutableKinds = ['realms', 'zones', 'areas', 'items', 'enemies', 'recipes', 'events', 'expeditions'];
   const normalized = {};
   for (const kind of mutableKinds) {
     if (!Array.isArray(payload[kind])) {

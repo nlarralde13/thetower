@@ -684,5 +684,26 @@
     "tags": [
       "junk"
     ]
+  },
+  {
+    "id": "test_expedition_token",
+    "name": "Test Token",
+    "type": "material",
+    "slot": "",
+    "rarity": "common",
+    "value": 1,
+    "description": "A reward item created for Test Expedition.",
+    "damageMin": null,
+    "damageMax": null,
+    "armor": null,
+    "toolType": "",
+    "level": null,
+    "durability": null,
+    "maxDurability": null,
+    "effect": "",
+    "tags": [
+      "test",
+      "reward"
+    ]
   }
 ]

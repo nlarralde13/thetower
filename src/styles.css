@@ -472,13 +472,32 @@ h3 {
   padding: 0;
 }
 
+.nodes-app-shell {
+  max-width: none;
+  padding: 0;
+}
+
 .admin-route-shell {
   min-height: 100vh;
   width: 100%;
   padding: 1.5rem;
 }
 
+.nodes-route-shell {
+  min-height: 100vh;
+  width: 100%;
+  padding: 1.5rem;
+}
+
 .admin-page {
+  min-height: calc(100vh - 3rem);
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  color: var(--text);
+}
+
+.nodes-page {
   min-height: calc(100vh - 3rem);
   display: flex;
   flex-direction: column;
@@ -498,6 +517,196 @@ h3 {
   display: flex;
   flex-wrap: wrap;
   gap: 0.6rem;
+}
+
+.admin-mobile-controls {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.admin-mobile-summary {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+}
+
+.nodes-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.nodes-header-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.6rem;
+}
+
+.nodes-layout {
+  display: grid;
+  gap: 1rem;
+}
+
+.nodes-tools,
+.nodes-canvas,
+.nodes-inspector {
+  display: flex;
+  flex-direction: column;
+  gap: 0.8rem;
+  min-width: 0;
+  border: 1px solid var(--border);
+  background: var(--surface);
+  border-radius: 14px;
+  box-shadow: var(--shadow);
+  backdrop-filter: blur(10px);
+  padding: 1rem;
+}
+
+.nodes-tools {
+  position: relative;
+}
+
+.nodes-tool-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.65rem;
+}
+
+.nodes-summary {
+  background: var(--surface-muted);
+}
+
+.nodes-source-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.65rem;
+  max-height: 20rem;
+  overflow: auto;
+  padding-right: 0.25rem;
+}
+
+.nodes-source-button {
+  text-align: left;
+}
+
+.nodes-canvas {
+  min-height: 28rem;
+  overflow: hidden;
+}
+
+.nodes-canvas-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.nodes-graph-scroll {
+  min-height: 34rem;
+  overflow: auto;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  background:
+    linear-gradient(var(--surface-inset) 1px, transparent 1px),
+    linear-gradient(90deg, var(--surface-inset) 1px, transparent 1px),
+    color-mix(in srgb, var(--surface-muted) 70%, transparent);
+  background-size: 32px 32px;
+}
+
+.nodes-graph {
+  position: relative;
+}
+
+.nodes-edges {
+  position: absolute;
+  inset: 0;
+  overflow: visible;
+  pointer-events: none;
+}
+
+.nodes-edge {
+  fill: none;
+  stroke: color-mix(in srgb, var(--accent) 70%, var(--border-strong));
+  stroke-width: 2.5;
+  stroke-linecap: round;
+  marker-end: url(#nodes-arrow);
+}
+
+#nodes-arrow path {
+  fill: color-mix(in srgb, var(--accent) 70%, var(--border-strong));
+}
+
+.nodes-node {
+  text-align: left;
+  position: absolute;
+  z-index: 1;
+  overflow: hidden;
+  cursor: pointer;
+}
+
+.nodes-node::before {
+  content: '';
+  position: absolute;
+  inset: 0 auto 0 0;
+  width: 0.42rem;
+  background: linear-gradient(180deg, var(--accent), color-mix(in srgb, var(--accent) 35%, transparent));
+}
+
+.nodes-node-top {
+  display: flex;
+  justify-content: space-between;
+  gap: 0.75rem;
+  align-items: center;
+}
+
+.nodes-node-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.45rem;
+  margin-top: 0.25rem;
+}
+
+.nodes-kind {
+  text-transform: capitalize;
+}
+
+.nodes-kind-area {
+  background: color-mix(in srgb, var(--success) 12%, var(--chip-bg));
+  color: var(--success);
+}
+
+.nodes-kind-travel {
+  background: color-mix(in srgb, var(--accent) 12%, var(--chip-bg));
+  color: var(--accent);
+}
+
+.nodes-kind-event {
+  background: color-mix(in srgb, #f59e0b 12%, var(--chip-bg));
+  color: #a16207;
+}
+
+.nodes-kind-encounter {
+  background: color-mix(in srgb, var(--danger) 12%, var(--chip-bg));
+  color: var(--danger);
+}
+
+.nodes-kind-note {
+  background: color-mix(in srgb, #8b5cf6 12%, var(--chip-bg));
+  color: #7c3aed;
+}
+
+.nodes-inspector {
+  position: relative;
+}
+
+.nodes-json {
+  width: 100%;
+  min-height: 10rem;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace;
+  font-size: 0.82rem;
+  white-space: pre-wrap;
 }
 
 .admin-layout {
@@ -583,8 +792,122 @@ h3 {
   gap: 0.6rem;
 }
 
-@media (min-width: 960px) {
+@media (max-width: 959px) {
   .admin-route-shell {
+    padding: 0.8rem;
+  }
+
+  .admin-page {
+    min-height: calc(100vh - 1.6rem);
+    gap: 0.75rem;
+  }
+
+  .admin-page-header {
+    gap: 0.75rem;
+  }
+
+  .admin-page-header > .stack {
+    gap: 0.35rem;
+  }
+
+  .admin-page-header .muted {
+    font-size: 0.9rem;
+  }
+
+  .admin-page-actions {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    width: 100%;
+    gap: 0.5rem;
+  }
+
+  .admin-page-actions button,
+  .admin-sync-status {
+    width: 100%;
+    min-width: 0;
+    justify-content: center;
+  }
+
+  .admin-page-actions button {
+    text-align: center;
+    padding: 0.75rem 0.7rem;
+  }
+
+  .admin-sync-status {
+    grid-column: 1 / -1;
+    text-align: center;
+  }
+
+  .admin-sidebar,
+  .admin-inspector {
+    display: none;
+  }
+
+  .admin-layout,
+  .admin-builder-grid {
+    gap: 0.75rem;
+  }
+
+  .admin-mobile-controls {
+    display: flex;
+  }
+
+  .admin-mobile-section {
+    gap: 0.3rem;
+  }
+
+  .admin-list {
+    max-height: 18rem;
+  }
+
+  .admin-list-pane .admin-list-header,
+  .admin-editor > .card:first-child {
+    display: none;
+  }
+
+  .admin-builder {
+    gap: 0.75rem;
+  }
+
+  .admin-builder > .card:first-child {
+    padding: 0.85rem 0.9rem;
+  }
+
+  .admin-editor,
+  .admin-list-pane {
+    gap: 0.6rem;
+  }
+
+  .admin-actions {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 0.5rem;
+  }
+
+  .admin-actions button {
+    text-align: center;
+  }
+
+  .admin-json {
+    min-height: 12rem;
+    font-size: 0.78rem;
+  }
+
+  .activity-card {
+    padding: 0.9rem;
+  }
+}
+
+@media (min-width: 960px) {
+  .admin-mobile-controls {
+    display: none;
+  }
+
+  .admin-route-shell {
+    padding: 2rem;
+  }
+
+  .nodes-route-shell {
     padding: 2rem;
   }
 
@@ -593,8 +916,18 @@ h3 {
     margin: 0 auto;
   }
 
+  .nodes-page {
+    max-width: 1920px;
+    margin: 0 auto;
+  }
+
   .admin-layout {
     grid-template-columns: 280px minmax(0, 1fr) 340px;
+    align-items: start;
+  }
+
+  .nodes-layout {
+    grid-template-columns: 320px minmax(0, 1fr) 360px;
     align-items: start;
   }
 
@@ -609,6 +942,15 @@ h3 {
 
   .admin-main {
     min-width: 0;
+  }
+
+  .nodes-tools,
+  .nodes-inspector {
+    position: sticky;
+    top: 1.5rem;
+    align-self: start;
+    max-height: calc(100vh - 3rem);
+    overflow: auto;
   }
 
   .admin-builder-grid {

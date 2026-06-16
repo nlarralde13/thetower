@@ -12,5 +12,16 @@
       "broken_wagon"
     ],
     "startingAreaId": "abandoned_campsite"
+  },
+  {
+    "id": "test_expedition_zone",
+    "realmId": "test_expedition_realm",
+    "name": "Test Zone",
+    "description": "A generated zone for Test Expedition.",
+    "areaIds": [
+      "test_expedition_field",
+      "test_expedition_ruins"
+    ],
+    "startingAreaId": "test_expedition_field"
   }
 ]

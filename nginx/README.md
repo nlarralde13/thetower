@@ -1,6 +1,6 @@
 # Nginx Front Door
 
-This config puts the app on port `3000` and proxies `/api/*` to the local Node API on port `3001`.
+This config puts the app on port `4000` and proxies `/api/*` to the local Node API on port `3001`.
 
 ## Assumptions
 
@@ -21,7 +21,7 @@ sudo systemctl reload nginx
 
 1. Build the app: `npm run build`
 2. Start the API: `npm run api`
-3. Start or reload nginx on port `3000`
+3. Start or reload nginx on port `4000`
 
 ## Notes
 

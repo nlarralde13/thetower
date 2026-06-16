@@ -5,6 +5,7 @@ import itemsData from './data/items.json';
 import recipesData from './data/recipes.json';
 import realmsData from './data/realms.json';
 import zonesData from './data/zones.json';
+import expeditionsData from './data/expeditions.json';
 
 export type DraftLootEntry = {
   itemId: string;
@@ -21,6 +22,30 @@ export type DraftGuaranteedDrop = {
 export type DraftAreaPoolEntry = {
   enemyId: string;
   weight: number;
+};
+
+export type DraftTravelRouteEvent = {
+  id: string;
+  label: string;
+  weight: number;
+  kind: 'none' | 'message' | 'reward' | 'combat';
+  message?: string;
+  enemyId?: string;
+  rewards?: { itemId: string; quantity: number }[];
+};
+
+export type DraftTravelStyle = {
+  id: 'careful' | 'normal' | 'quick';
+  label: string;
+  steps: number;
+  eventPool: DraftTravelRouteEvent[];
+};
+
+export type DraftTravelRoute = {
+  id: string;
+  destinationAreaId: string;
+  label: string;
+  styles: DraftTravelStyle[];
 };
 
 export type DraftAreaActivity = {
@@ -49,6 +74,14 @@ export type DraftEventChoice = {
   text: string;
   requirements?: { items?: { itemId: string; quantity: number }[] };
   outcome: DraftEventChoiceOutcome;
+};
+
+export type DraftRequirement = {
+  kind: 'level' | 'skill' | 'item' | 'tool' | 'building' | 'questFlag' | 'key' | 'artifact';
+  id?: string;
+  value?: number;
+  quantity?: number;
+  label?: string;
 };
 
 export type AdminItemDraft = {
@@ -107,6 +140,7 @@ export type AdminAreaDraft = {
   recommendedLevel: number;
   resourceItemIds: string[];
   connectedAreaIds: string[];
+  travelRoutes: DraftTravelRoute[];
   revealText: string;
 };
 
@@ -139,6 +173,19 @@ export type AdminEventDraft = {
   choices: DraftEventChoice[];
 };
 
+export type AdminExpeditionDraft = {
+  id: string;
+  name: string;
+  description: string;
+  realmId: string;
+  zoneId: string;
+  startingAreaId: string;
+  recommendedLevel: number;
+  requirements: DraftRequirement[];
+  travelPool: DraftTravelRouteEvent[];
+  rewardPreview: { itemId: string; quantity: number }[];
+};
+
 export type AdminDrafts = {
   realms: AdminRealmDraft[];
   items: AdminItemDraft[];
@@ -147,8 +194,56 @@ export type AdminDrafts = {
   zones: AdminZoneDraft[];
   recipes: AdminRecipeDraft[];
   events: AdminEventDraft[];
+  expeditions: AdminExpeditionDraft[];
   updatedAt: number;
 };
+
+function createDefaultTravelStyles(destinationAreaName: string): DraftTravelStyle[] {
+  return [
+    {
+      id: 'careful',
+      label: 'Travel Carefully',
+      steps: 2,
+      eventPool: [
+        { id: 'safe_passage', label: 'Safe passage', weight: 70, kind: 'none' },
+        { id: 'quiet_note', label: 'Quiet note', weight: 20, kind: 'message', message: `You keep to the edges on the way to ${destinationAreaName}.` },
+        { id: 'road_ambush', label: 'Road ambush', weight: 10, kind: 'combat', enemyId: 'wild_hog' }
+      ]
+    },
+    {
+      id: 'normal',
+      label: 'Travel Normally',
+      steps: 1,
+      eventPool: [
+        { id: 'straight_path', label: 'Straight path', weight: 55, kind: 'none' },
+        { id: 'passing_thought', label: 'Passing thought', weight: 20, kind: 'message', message: `You keep moving toward ${destinationAreaName}.` },
+        { id: 'roadside_attack', label: 'Roadside attack', weight: 25, kind: 'combat', enemyId: 'wild_hog' }
+      ]
+    },
+    {
+      id: 'quick',
+      label: 'Travel Quickly',
+      steps: 1,
+      eventPool: [
+        { id: 'fast_route', label: 'Fast route', weight: 40, kind: 'none' },
+        { id: 'brisk_push', label: 'Brisk push', weight: 20, kind: 'message', message: `You hurry toward ${destinationAreaName}.` },
+        { id: 'open_ambush', label: 'Open ambush', weight: 40, kind: 'combat', enemyId: 'wild_hog' }
+      ]
+    }
+  ];
+}
+
+function createDefaultTravelRoutes(areaId: string, connectedAreaIds: string[], areaNameById: Map<string, string>) {
+  return connectedAreaIds.map((destinationAreaId) => {
+    const destinationAreaName = areaNameById.get(destinationAreaId) ?? destinationAreaId;
+    return {
+      id: `travel_${areaId}_to_${destinationAreaId}`,
+      destinationAreaId,
+      label: `Travel to ${destinationAreaName}`,
+      styles: createDefaultTravelStyles(destinationAreaName)
+    } as DraftTravelRoute;
+  });
+}
 
 export function createDefaultAdminDrafts(): AdminDrafts {
   const realmByZoneId = new Map(zonesData.map((zone) => [zone.id, zone.realmId]));
@@ -267,6 +362,7 @@ export function createDefaultAdminDrafts(): AdminDrafts {
       recommendedLevel: area.recommendedLevel,
       resourceItemIds: area.resourceItemIds,
       connectedAreaIds: area.connectedAreaIds,
+      travelRoutes: (area as any).travelRoutes ?? createDefaultTravelRoutes(area.id, area.connectedAreaIds ?? [], new Map(areasData.map((entry) => [entry.id, entry.name]))),
       revealText: area.revealText ?? ''
     })),
     zones: zonesData.map((zone) => ({
@@ -295,6 +391,18 @@ export function createDefaultAdminDrafts(): AdminDrafts {
       description: event.description,
       choices: event.choices
     })),
+    expeditions: expeditionsData.map((expedition) => ({
+      id: expedition.id,
+      name: expedition.name,
+      description: expedition.description,
+      realmId: expedition.realmId,
+      zoneId: expedition.zoneId,
+      startingAreaId: expedition.startingAreaId,
+      recommendedLevel: expedition.recommendedLevel ?? 1,
+      requirements: (expedition as any).requirements ?? [],
+      travelPool: (expedition as any).travelPool ?? [],
+      rewardPreview: (expedition as any).rewardPreview ?? []
+    })),
     updatedAt: Date.now()
   };
 }
@@ -314,6 +422,7 @@ export function normalizeAdminDrafts(drafts: AdminDrafts): AdminDrafts {
     zones: mergeById(drafts.zones, defaults.zones),
     recipes: mergeById(drafts.recipes, defaults.recipes),
     events: mergeById(drafts.events, defaults.events),
+    expeditions: mergeById(drafts.expeditions, defaults.expeditions),
     updatedAt: drafts.updatedAt ?? Date.now()
   };
 }
@@ -326,7 +435,8 @@ export function exportAdminDrafts(drafts: AdminDrafts) {
     areas: drafts.areas,
     zones: drafts.zones,
     recipes: drafts.recipes,
-    events: drafts.events
+    events: drafts.events,
+    expeditions: drafts.expeditions
   };
 }
 
@@ -359,6 +469,7 @@ export function serializeAdminDraftsForSourceFiles(drafts: AdminDrafts) {
       encounterChance: area.encounterChance,
       resourceItemIds: area.resourceItemIds,
       connectedAreaIds: area.connectedAreaIds,
+      travelRoutes: area.travelRoutes,
       revealText: area.revealText,
       activities: area.activities,
       realmId: area.realmId,
@@ -425,7 +536,8 @@ export function serializeAdminDraftsForSourceFiles(drafts: AdminDrafts) {
       activityId: event.activityId,
       description: event.description,
       choices: event.choices
-    }))
+    })),
+    expeditions: drafts.expeditions.map((expedition) => ({ ...expedition }))
   };
 }
 
@@ -450,6 +562,7 @@ export function buildRuntimeContentFromDrafts(drafts: AdminDrafts) {
       encounterChance: area.encounterChance,
       resourceItemIds: area.resourceItemIds,
       connectedAreaIds: area.connectedAreaIds,
+      travelRoutes: area.travelRoutes,
       revealText: area.revealText,
       activities: area.activities
     })),
@@ -492,7 +605,8 @@ export function buildRuntimeContentFromDrafts(drafts: AdminDrafts) {
       ingredients: recipe.ingredients,
       output: recipe.outputs[0] ?? { itemId: '', quantity: 0 }
     })),
-    events: drafts.events.map((event) => ({ ...event }))
+    events: drafts.events.map((event) => ({ ...event })),
+    expeditions: drafts.expeditions.map((expedition) => ({ ...expedition }))
   };
 }
 
@@ -580,6 +694,7 @@ export function createBlankAreaDraft(existingIds: string[]): AdminAreaDraft {
     recommendedLevel: 1,
     resourceItemIds: [],
     connectedAreaIds: [],
+    travelRoutes: [],
     revealText: ''
   };
 }
@@ -619,6 +734,21 @@ export function createBlankEventDraft(existingIds: string[]): AdminEventDraft {
   };
 }
 
+export function createBlankExpeditionDraft(existingIds: string[]): AdminExpeditionDraft {
+  return {
+    id: createDraftId('new_expedition', existingIds),
+    name: 'New Expedition',
+    description: '',
+    realmId: '',
+    zoneId: '',
+    startingAreaId: '',
+    recommendedLevel: 1,
+    requirements: [],
+    travelPool: [],
+    rewardPreview: []
+  };
+}
+
 export function getExpeditionValidationIssues(drafts: AdminDrafts) {
   const issues: string[] = [];
   if (!drafts.realms.length) issues.push('At least one realm must remain.');
@@ -654,21 +784,58 @@ export function getExpeditionValidationIssues(drafts: AdminDrafts) {
     }
   }
 
+  for (const expedition of drafts.expeditions) {
+    const realm = drafts.realms.find((entry) => entry.id === expedition.realmId);
+    if (!realm) {
+      issues.push(`Expedition ${expedition.name} needs a valid destination realm.`);
+    }
+    const zone = drafts.zones.find((entry) => entry.id === expedition.zoneId);
+    if (!zone) {
+      issues.push(`Expedition ${expedition.name} needs a valid destination zone.`);
+    }
+    if (realm && zone && zone.realmId !== realm.id && !realm.zoneIds.includes(zone.id)) {
+      issues.push(`Expedition ${expedition.name} destination zone must belong to its realm.`);
+    }
+    const startingArea = drafts.areas.find((entry) => entry.id === expedition.startingAreaId);
+    if (!startingArea) {
+      issues.push(`Expedition ${expedition.name} needs a valid starting area.`);
+    }
+    if (zone && startingArea && startingArea.zoneId !== zone.id) {
+      issues.push(`Expedition ${expedition.name} starting area must belong to its destination zone.`);
+    }
+    for (const travelEvent of expedition.travelPool) {
+      if (travelEvent.enemyId && !drafts.enemies.some((enemy) => enemy.id === travelEvent.enemyId)) {
+        issues.push(`Expedition ${expedition.name} travel event ${travelEvent.label} references a missing enemy.`);
+      }
+      for (const reward of travelEvent.rewards ?? []) {
+        if (!drafts.items.some((item) => item.id === reward.itemId)) {
+          issues.push(`Expedition ${expedition.name} travel event ${travelEvent.label} references a missing reward item.`);
+        }
+      }
+    }
+    for (const reward of expedition.rewardPreview) {
+      if (!drafts.items.some((item) => item.id === reward.itemId)) {
+        issues.push(`Expedition ${expedition.name} reward preview references a missing item.`);
+      }
+    }
+  }
+
   return Array.from(new Set(issues));
 }
 
-export function getDeleteSafetyNotes(drafts: AdminDrafts, kind: 'realms' | 'zones' | 'areas' | 'events' | 'enemies' | 'items' | 'recipes', id: string) {
+export function getDeleteSafetyNotes(drafts: AdminDrafts, kind: 'realms' | 'zones' | 'areas' | 'events' | 'enemies' | 'items' | 'recipes' | 'expeditions', id: string) {
   const next = deleteAdminDraftRecord(drafts, kind, id);
   return getExpeditionValidationIssues(next);
 }
 
-export function deleteAdminDraftRecord(drafts: AdminDrafts, kind: 'realms' | 'zones' | 'areas' | 'events' | 'enemies' | 'items' | 'recipes', id: string): AdminDrafts {
+export function deleteAdminDraftRecord(drafts: AdminDrafts, kind: 'realms' | 'zones' | 'areas' | 'events' | 'enemies' | 'items' | 'recipes' | 'expeditions', id: string): AdminDrafts {
   const next = cloneDrafts(drafts);
   switch (kind) {
     case 'realms': {
       next.realms = next.realms.filter((realm) => realm.id !== id);
       next.zones = next.zones.map((zone) => (zone.realmId === id ? { ...zone, realmId: '' } : zone));
       next.areas = next.areas.map((area) => (area.realmId === id ? { ...area, realmId: '' } : area));
+      next.expeditions = next.expeditions.map((expedition) => (expedition.realmId === id ? { ...expedition, realmId: '' } : expedition));
       break;
     }
     case 'zones': {
@@ -693,6 +860,9 @@ export function deleteAdminDraftRecord(drafts: AdminDrafts, kind: 'realms' | 'zo
         };
       });
       next.areas = next.areas.map((area) => (area.zoneId === id ? { ...area, zoneId: '', realmId: '' } : area));
+      next.expeditions = next.expeditions.map((expedition) => (
+        expedition.zoneId === id ? { ...expedition, zoneId: '', startingAreaId: '' } : expedition
+      ));
       break;
     }
     case 'areas': {
@@ -720,9 +890,27 @@ export function deleteAdminDraftRecord(drafts: AdminDrafts, kind: 'realms' | 'zo
         };
       });
       next.events = next.events.map((event) => (event.areaId === id ? { ...event, areaId: '' } : event));
+      next.expeditions = next.expeditions.map((expedition) => (
+        expedition.startingAreaId === id ? { ...expedition, startingAreaId: '' } : expedition
+      ));
       next.areas = next.areas.map((area) => ({
         ...area,
         connectedAreaIds: area.connectedAreaIds.filter((connectedId) => connectedId !== id),
+        travelRoutes: area.travelRoutes
+          .filter((route) => route.destinationAreaId !== id)
+          .map((route) => ({
+            ...route,
+            styles: route.styles.map((style) => ({
+              ...style,
+              eventPool: style.eventPool.map((event) => {
+                if (event.enemyId === id) {
+                  return { ...event, enemyId: '' };
+                }
+                const rewards = event.rewards?.filter((reward) => reward.itemId !== id);
+                return rewards ? { ...event, rewards } : event;
+              })
+            }))
+          })),
         activities: area.activities.map((activity) => {
           if (activity.destinationAreaId === id) {
             return { ...activity, destinationAreaId: '' };
@@ -759,6 +947,10 @@ export function deleteAdminDraftRecord(drafts: AdminDrafts, kind: 'realms' | 'zo
             : choice
         )
       }));
+      next.expeditions = next.expeditions.map((expedition) => ({
+        ...expedition,
+        travelPool: expedition.travelPool.map((entry) => (entry.enemyId === id ? { ...entry, enemyId: '' } : entry))
+      }));
       break;
     }
     case 'items': {
@@ -777,10 +969,22 @@ export function deleteAdminDraftRecord(drafts: AdminDrafts, kind: 'realms' | 'zo
         ingredients: recipe.ingredients.filter((ingredient) => ingredient.itemId !== id),
         outputs: recipe.outputs.filter((output) => output.itemId !== id)
       }));
+      next.expeditions = next.expeditions.map((expedition) => ({
+        ...expedition,
+        rewardPreview: expedition.rewardPreview.filter((reward) => reward.itemId !== id),
+        travelPool: expedition.travelPool.map((entry) => {
+          const rewards = entry.rewards?.filter((reward) => reward.itemId !== id);
+          return rewards ? { ...entry, rewards } : entry;
+        })
+      }));
       break;
     }
     case 'recipes': {
       next.recipes = next.recipes.filter((recipe) => recipe.id !== id);
+      break;
+    }
+    case 'expeditions': {
+      next.expeditions = next.expeditions.filter((expedition) => expedition.id !== id);
       break;
     }
   }

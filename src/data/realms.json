@@ -8,5 +8,15 @@
     ],
     "startingZoneId": "bounding_plains",
     "startingAreaId": "abandoned_campsite"
+  },
+  {
+    "id": "test_expedition_realm",
+    "name": "Test Realm",
+    "description": "A generated realm for Test Expedition.",
+    "zoneIds": [
+      "test_expedition_zone"
+    ],
+    "startingZoneId": "test_expedition_zone",
+    "startingAreaId": "test_expedition_field"
   }
 ]

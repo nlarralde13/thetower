@@ -123,5 +123,24 @@
       }
     ],
     "guaranteedDrops": []
+  },
+  {
+    "id": "test_expedition_sentinel",
+    "name": "Training Sentinel",
+    "description": "A low-risk combat check for Test Expedition.",
+    "level": 1,
+    "hp": 8,
+    "damageMin": 1,
+    "damageMax": 2,
+    "xp": 8,
+    "lootTable": [
+      {
+        "itemId": "test_expedition_token",
+        "chance": 0.5,
+        "minQuantity": 1,
+        "maxQuantity": 1
+      }
+    ],
+    "guaranteedDrops": []
   }
 ]

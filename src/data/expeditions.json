@@ -1,0 +1,51 @@
+[
+  {
+    "id": "verdant_expanse_survey",
+    "name": "Verdant Expanse Survey",
+    "description": "A safe first expedition into the Bounding Plains to chart nearby landmarks and recover useful supplies.",
+    "realmId": "verdant_expanse",
+    "zoneId": "bounding_plains",
+    "startingAreaId": "abandoned_campsite",
+    "recommendedLevel": 1,
+    "requirements": [],
+    "travelPool": [
+      {
+        "id": "quiet_trail",
+        "label": "Quiet Trail",
+        "weight": 60,
+        "kind": "message",
+        "message": "The path through the grass stays quiet for now."
+      },
+      {
+        "id": "forage_patch",
+        "label": "Forage Patch",
+        "weight": 25,
+        "kind": "reward",
+        "message": "You find edible greens growing beside the trail.",
+        "rewards": [
+          {
+            "itemId": "wild_herbs",
+            "quantity": 1
+          }
+        ]
+      },
+      {
+        "id": "wild_hog_ambush",
+        "label": "Wild Hog Ambush",
+        "weight": 15,
+        "kind": "combat",
+        "enemyId": "wild_hog"
+      }
+    ],
+    "rewardPreview": [
+      {
+        "itemId": "wild_herbs",
+        "quantity": 1
+      },
+      {
+        "itemId": "wood_scraps",
+        "quantity": 1
+      }
+    ]
+  }
+]

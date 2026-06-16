@@ -98,5 +98,38 @@
         }
       }
     ]
+  },
+  {
+    "id": "test_expedition_choice",
+    "name": "Test Expedition Choice",
+    "areaId": "test_expedition_ruins",
+    "activityId": "test_event",
+    "description": "A compact branch used to verify event rewards and combat outcomes.",
+    "choices": [
+      {
+        "id": "take_reward",
+        "text": "Take Test Token",
+        "outcome": {
+          "text": "You secure Test Token.",
+          "rewards": [
+            {
+              "itemId": "test_expedition_token",
+              "quantity": 1
+            }
+          ]
+        }
+      },
+      {
+        "id": "challenge_guardian",
+        "text": "Challenge Training Sentinel",
+        "outcome": {
+          "text": "Training Sentinel steps forward.",
+          "rewards": [],
+          "combat": {
+            "enemyId": "test_expedition_sentinel"
+          }
+        }
+      }
+    ]
   }
 ]

@@ -3,6 +3,7 @@ import {
   createBlankAreaDraft,
   createBlankEnemyDraft,
   createBlankEventDraft,
+  createBlankExpeditionDraft,
   createBlankItemDraft,
   createBlankRealmDraft,
   createBlankRecipeDraft,
@@ -14,6 +15,7 @@ import {
   type AdminDrafts,
   type AdminEnemyDraft,
   type AdminEventDraft,
+  type AdminExpeditionDraft,
   type AdminItemDraft,
   type AdminRealmDraft,
   type AdminRecipeDraft,
@@ -22,10 +24,13 @@ import {
   type DraftAreaPoolEntry,
   type DraftEventChoice,
   type DraftGuaranteedDrop,
-  type DraftLootEntry
+  type DraftLootEntry,
+  type DraftTravelRoute,
+  type DraftTravelStyle,
+  type DraftTravelRouteEvent
 } from '../adminDrafts';
 
-type AdminSection = 'realms' | 'items' | 'enemies' | 'zones' | 'areas' | 'recipes' | 'events' | 'export';
+type AdminSection = 'wizard' | 'expeditions' | 'realms' | 'items' | 'enemies' | 'zones' | 'areas' | 'recipes' | 'events' | 'export';
 
 type AdminScreenProps = {
   drafts: AdminDrafts;
@@ -33,6 +38,7 @@ type AdminScreenProps = {
   onReset: () => void;
   onReload: () => void;
   onBack: () => void;
+  onOpenNodes: () => void;
   themeMode: 'light' | 'dark';
   onToggleTheme: () => void;
   syncState: 'loading' | 'ready' | 'saving' | 'error';
@@ -41,9 +47,11 @@ type AdminScreenProps = {
 };
 
 const sectionMeta: Record<AdminSection, { label: string; description: string }> = {
+  wizard: { label: 'Test Expedition', description: 'Generate a complete playable test expedition scaffold.' },
+  expeditions: { label: 'Expedition Builder', description: 'Create and edit player-facing expeditions.' },
   realms: { label: 'Realm Builder', description: 'Create and edit realms and their zone attachments.' },
   zones: { label: 'Zone Builder', description: 'Attach areas to zones and pick each zone’s starting area.' },
-  areas: { label: 'Area Builder', description: 'Edit realms, zones, activities, encounter pools, and requirements.' },
+  areas: { label: 'Area Builder', description: 'Edit realms, zones, travel routes, activities, encounter pools, and requirements.' },
   events: { label: 'Event Builder', description: 'Edit event text, choices, rewards, and area attachment.' },
   enemies: { label: 'Enemy Builder', description: 'Edit enemy stats, loot tables, and guaranteed drops.' },
   items: { label: 'Item Builder', description: 'Create and edit equipment, tools, materials, and consumables.' },
@@ -52,7 +60,7 @@ const sectionMeta: Record<AdminSection, { label: string; description: string }> 
 };
 
 export function AdminScreen(props: AdminScreenProps) {
-  const [section, setSection] = useState<AdminSection>('realms');
+  const [section, setSection] = useState<AdminSection>('wizard');
   const [selectedIds, setSelectedIds] = useState({
     realmId: props.drafts.realms[0]?.id ?? '',
     itemId: props.drafts.items[0]?.id ?? '',
@@ -60,7 +68,8 @@ export function AdminScreen(props: AdminScreenProps) {
     zoneId: props.drafts.zones[0]?.id ?? '',
     areaId: props.drafts.areas[0]?.id ?? '',
     recipeId: props.drafts.recipes[0]?.id ?? '',
-    eventId: props.drafts.events[0]?.id ?? ''
+    eventId: props.drafts.events[0]?.id ?? '',
+    expeditionId: props.drafts.expeditions[0]?.id ?? ''
   });
 
   useEffect(() => {
@@ -85,6 +94,9 @@ export function AdminScreen(props: AdminScreenProps) {
     if (!props.drafts.events.some((entry) => entry.id === selectedIds.eventId)) {
       setSelectedIds((current) => ({ ...current, eventId: props.drafts.events[0]?.id ?? '' }));
     }
+    if (!props.drafts.expeditions.some((entry) => entry.id === selectedIds.expeditionId)) {
+      setSelectedIds((current) => ({ ...current, expeditionId: props.drafts.expeditions[0]?.id ?? '' }));
+    }
   }, [props.drafts, selectedIds]);
 
   const exportData = exportAdminDrafts(props.drafts);
@@ -95,10 +107,13 @@ export function AdminScreen(props: AdminScreenProps) {
     zones: selectedIds.zoneId ? getDeleteSafetyNotes(props.drafts, 'zones', selectedIds.zoneId) : [],
     areas: selectedIds.areaId ? getDeleteSafetyNotes(props.drafts, 'areas', selectedIds.areaId) : [],
     recipes: selectedIds.recipeId ? getDeleteSafetyNotes(props.drafts, 'recipes', selectedIds.recipeId) : [],
-    events: selectedIds.eventId ? getDeleteSafetyNotes(props.drafts, 'events', selectedIds.eventId) : []
+    events: selectedIds.eventId ? getDeleteSafetyNotes(props.drafts, 'events', selectedIds.eventId) : [],
+    expeditions: selectedIds.expeditionId ? getDeleteSafetyNotes(props.drafts, 'expeditions', selectedIds.expeditionId) : []
   }), [props.drafts, selectedIds]);
   const currentSelection = useMemo(() => {
     switch (section) {
+      case 'expeditions':
+        return props.drafts.expeditions.find((entry) => entry.id === selectedIds.expeditionId) ?? props.drafts.expeditions[0] ?? null;
       case 'realms':
         return props.drafts.realms.find((entry) => entry.id === selectedIds.realmId) ?? props.drafts.realms[0] ?? null;
       case 'items':
@@ -123,7 +138,7 @@ export function AdminScreen(props: AdminScreenProps) {
       <div className="admin-page-header">
         <div className="stack">
           <span className="eyebrow">Expedition Builder</span>
-          <h2>Build the expedition loop</h2>
+          <h2>Expedition Builder</h2>
           <div className="muted">Content edits save to the local API, SQLite database, and mirrored <code>src/data/*.json</code> files.</div>
           <div className="muted">Sync state: {props.syncState}{props.syncError ? ` · ${props.syncError}` : ''}</div>
         </div>
@@ -137,7 +152,27 @@ export function AdminScreen(props: AdminScreenProps) {
             Reload Content
           </button>
           <div className="admin-sync-status muted">{props.contentStatusLabel}</div>
+          <button className="secondary" onClick={props.onOpenNodes}>Node Editor</button>
           <button className="ghost" onClick={props.onBack}>Back to Game</button>
+        </div>
+      </div>
+
+      <div className="admin-mobile-controls">
+        <label className="field admin-mobile-section">
+          <span>Section</span>
+          <select value={section} onChange={(event) => setSection(event.target.value as AdminSection)}>
+            {(['wizard', 'expeditions', 'realms', 'zones', 'areas', 'events', 'enemies', 'items', 'recipes', 'export'] as AdminSection[]).map((key) => (
+              <option key={key} value={key}>{sectionMeta[key].label}</option>
+            ))}
+          </select>
+        </label>
+        <div className="admin-mobile-summary">
+          <span className="chip">{props.contentStatusLabel}</span>
+          <span className="chip">{props.drafts.realms.length} realms</span>
+          <span className="chip">{props.drafts.zones.length} zones</span>
+          <span className="chip">{props.drafts.areas.length} areas</span>
+          <span className="chip">{props.drafts.events.length} events</span>
+          <span className="chip">{props.drafts.expeditions.length} expeditions</span>
         </div>
       </div>
 
@@ -151,7 +186,7 @@ export function AdminScreen(props: AdminScreenProps) {
           </div>
 
           <div className="admin-section-nav">
-            {(['realms', 'zones', 'areas', 'events', 'enemies', 'items', 'recipes', 'export'] as AdminSection[]).map((key) => (
+            {(['wizard', 'expeditions', 'realms', 'zones', 'areas', 'events', 'enemies', 'items', 'recipes', 'export'] as AdminSection[]).map((key) => (
               <button
                 key={key}
                 className={section === key ? 'card selected admin-nav-button' : 'card admin-nav-button'}
@@ -173,6 +208,7 @@ export function AdminScreen(props: AdminScreenProps) {
               <span>Areas {props.drafts.areas.length}</span>
               <span>Recipes {props.drafts.recipes.length}</span>
               <span>Events {props.drafts.events.length}</span>
+              <span>Expeditions {props.drafts.expeditions.length}</span>
             </div>
           </div>
 
@@ -191,6 +227,62 @@ export function AdminScreen(props: AdminScreenProps) {
         </aside>
 
         <section className="admin-main">
+          {section === 'wizard' && (
+            <TestExpeditionWizard
+              drafts={props.drafts}
+              onCreate={(result) => {
+                props.onChange((current) => addTestExpeditionToDrafts(current, result));
+                setSelectedIds((current) => ({
+                  ...current,
+                  expeditionId: result.expedition.id,
+                  realmId: result.realm.id,
+                  zoneId: result.zone.id,
+                  areaId: result.areas[0]?.id ?? current.areaId,
+                  eventId: result.event.id,
+                  enemyId: result.enemy.id,
+                  itemId: result.rewardItem.id
+                }));
+                setSection('areas');
+              }}
+            />
+          )}
+
+          {section === 'expeditions' && (
+            <EditableWorkspace
+              title="Expedition Builder"
+              description="Create and edit player-facing journeys that point into realm, zone, area, travel, and reward content."
+              entries={props.drafts.expeditions}
+              selectedId={selectedIds.expeditionId}
+              selectedEntry={props.drafts.expeditions.find((entry) => entry.id === selectedIds.expeditionId) ?? null}
+              onSelect={(expeditionId) => setSelectedIds((current) => ({ ...current, expeditionId }))}
+              onCreate={() => {
+                const next = createBlankExpeditionDraft(props.drafts.expeditions.map((entry) => entry.id));
+                props.onChange((current) => ({ ...current, expeditions: [...current.expeditions, next], updatedAt: Date.now() }));
+                setSelectedIds((current) => ({ ...current, expeditionId: next.id }));
+              }}
+              onSave={(updated) => props.onChange((current) => ({
+                ...current,
+                expeditions: current.expeditions.map((entry) => (entry.id === updated.id ? updated : entry)),
+                updatedAt: Date.now()
+              }))}
+              onDelete={(expedition) => {
+                props.onChange((current) => deleteAdminDraftRecord(current, 'expeditions', expedition.id));
+                setSelectedIds((current) => ({ ...current, expeditionId: props.drafts.expeditions.find((entry) => entry.id !== expedition.id)?.id ?? '' }));
+              }}
+              deleteWarnings={deleteWarnings.expeditions}
+              renderListItem={(entry) => `${entry.name} · level ${entry.recommendedLevel}`}
+              renderEditor={(expedition, onChange) => (
+                <ExpeditionEditor
+                  expedition={expedition as AdminExpeditionDraft}
+                  realmOptions={props.drafts.realms.map((realm) => ({ value: realm.id, label: realm.name }))}
+                  zoneOptions={props.drafts.zones.map((zone) => ({ value: zone.id, label: zone.name, realmId: zone.realmId }))}
+                  areaOptions={props.drafts.areas.map((area) => ({ value: area.id, label: area.name, zoneId: area.zoneId }))}
+                  onChange={onChange}
+                />
+              )}
+            />
+          )}
+
           {section === 'realms' && (
             <EditableWorkspace
               title="Realm Builder"
@@ -341,6 +433,7 @@ export function AdminScreen(props: AdminScreenProps) {
                   area={area as AdminAreaDraft}
                   realmOptions={props.drafts.realms.map((realm) => ({ value: realm.id, label: realm.name }))}
                   zoneOptions={props.drafts.zones.map((zone) => ({ value: zone.id, label: zone.name }))}
+                  areaOptions={props.drafts.areas.map((entry) => ({ value: entry.id, label: entry.name, zoneId: entry.zoneId }))}
                   onChange={onChange}
                 />
               )}
@@ -440,6 +533,372 @@ export function AdminScreen(props: AdminScreenProps) {
         </aside>
       </div>
     </section>
+  );
+}
+
+type TestExpeditionWizardDraft = {
+  name: string;
+  realmName: string;
+  zoneName: string;
+  startingAreaName: string;
+  resourceAreaName: string;
+  eventAreaName: string;
+  rewardItemName: string;
+  enemyName: string;
+};
+
+type TestExpeditionBuildResult = {
+  realm: AdminRealmDraft;
+  zone: AdminZoneDraft;
+  areas: AdminAreaDraft[];
+  event: AdminEventDraft;
+  enemy: AdminEnemyDraft;
+  rewardItem: AdminItemDraft;
+  expedition: AdminExpeditionDraft;
+};
+
+function slugifyId(value: string, fallback: string) {
+  const slug = value
+    .trim()
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, '_')
+    .replace(/^_+|_+$/g, '');
+  return slug || fallback;
+}
+
+function uniqueId(base: string, existingIds: string[]) {
+  const existing = new Set(existingIds);
+  let candidate = base;
+  let suffix = 2;
+  while (existing.has(candidate)) {
+    candidate = `${base}_${suffix}`;
+    suffix += 1;
+  }
+  existingIds.push(candidate);
+  return candidate;
+}
+
+function makeTravelEventPool(enemyId: string, destinationName: string): DraftTravelRouteEvent[] {
+  return [
+    { id: 'safe_passage', label: 'Safe passage', weight: 70, kind: 'none' },
+    { id: 'road_note', label: 'Road note', weight: 20, kind: 'message', message: `The route toward ${destinationName} stays clear for now.` },
+    { id: 'test_ambush', label: 'Test ambush', weight: 10, kind: 'combat', enemyId }
+  ];
+}
+
+function makeTravelRoute(fromAreaId: string, destinationArea: AdminAreaDraft, enemyId: string): DraftTravelRoute {
+  return {
+    id: `travel_${fromAreaId}_to_${destinationArea.id}`,
+    destinationAreaId: destinationArea.id,
+    label: `Travel to ${destinationArea.name}`,
+    styles: [
+      {
+        id: 'careful',
+        label: 'Travel Carefully',
+        steps: 2,
+        eventPool: makeTravelEventPool(enemyId, destinationArea.name).map((entry) =>
+          entry.kind === 'combat' ? { ...entry, weight: 5 } : entry
+        )
+      },
+      {
+        id: 'normal',
+        label: 'Travel Normally',
+        steps: 1,
+        eventPool: makeTravelEventPool(enemyId, destinationArea.name)
+      },
+      {
+        id: 'quick',
+        label: 'Travel Quickly',
+        steps: 1,
+        eventPool: makeTravelEventPool(enemyId, destinationArea.name).map((entry) =>
+          entry.kind === 'combat' ? { ...entry, weight: 30 } : entry
+        )
+      }
+    ]
+  };
+}
+
+function createTestExpedition(drafts: AdminDrafts, values: TestExpeditionWizardDraft): TestExpeditionBuildResult {
+  const realmIds = drafts.realms.map((entry) => entry.id);
+  const zoneIds = drafts.zones.map((entry) => entry.id);
+  const areaIds = drafts.areas.map((entry) => entry.id);
+  const itemIds = drafts.items.map((entry) => entry.id);
+  const enemyIds = drafts.enemies.map((entry) => entry.id);
+  const eventIds = drafts.events.map((entry) => entry.id);
+  const base = slugifyId(values.name, 'test_expedition');
+
+  const realmId = uniqueId(`${base}_realm`, realmIds);
+  const zoneId = uniqueId(`${base}_zone`, zoneIds);
+  const startAreaId = uniqueId(`${base}_start`, areaIds);
+  const resourceAreaId = uniqueId(`${base}_field`, areaIds);
+  const eventAreaId = uniqueId(`${base}_ruins`, areaIds);
+  const rewardItemId = uniqueId(`${base}_token`, itemIds);
+  const enemyId = uniqueId(`${base}_sentinel`, enemyIds);
+  const eventId = uniqueId(`${base}_choice`, eventIds);
+  const expeditionId = uniqueId(`${base}_expedition`, drafts.expeditions.map((entry) => entry.id));
+
+  const rewardItem: AdminItemDraft = {
+    id: rewardItemId,
+    name: values.rewardItemName,
+    type: 'material',
+    slot: '',
+    rarity: 'common',
+    value: 1,
+    description: `A reward item created for ${values.name}.`,
+    damageMin: null,
+    damageMax: null,
+    armor: null,
+    toolType: '',
+    level: null,
+    durability: null,
+    maxDurability: null,
+    effect: '',
+    tags: ['test', 'reward']
+  };
+
+  const enemy: AdminEnemyDraft = {
+    id: enemyId,
+    name: values.enemyName,
+    description: `A low-risk combat check for ${values.name}.`,
+    level: 1,
+    hp: 8,
+    damageMin: 1,
+    damageMax: 2,
+    xp: 8,
+    lootTable: [{ itemId: rewardItemId, chance: 0.5, minQuantity: 1, maxQuantity: 1 }],
+    guaranteedDrops: []
+  };
+
+  const startArea: AdminAreaDraft = {
+    id: startAreaId,
+    name: values.startingAreaName,
+    realmId,
+    zoneId,
+    description: `The starting point for ${values.name}.`,
+    activities: [
+      { id: 'inspect_start', label: 'Inspect the Area', kind: 'scripted', action: 'message', message: 'The expedition route is ready for a basic play test.' },
+      { id: 'travel_resource', label: `Travel to ${values.resourceAreaName}`, kind: 'travel', action: 'travel', destinationAreaId: resourceAreaId, params: { ambushChance: 0, ambushEnemyId: enemyId } },
+      { id: 'travel_event', label: `Travel to ${values.eventAreaName}`, kind: 'travel', action: 'travel', destinationAreaId: eventAreaId, params: { ambushChance: 0, ambushEnemyId: enemyId } },
+      { id: 'return_tower', label: 'Return to Tower', kind: 'scripted', action: 'returnToTower' }
+    ],
+    enemyPool: [{ enemyId, weight: 100 }],
+    encounterChance: 0.1,
+    requirements: [],
+    recommendedLevel: 1,
+    resourceItemIds: [rewardItemId],
+    connectedAreaIds: [resourceAreaId, eventAreaId],
+    travelRoutes: [],
+    revealText: `You enter ${values.startingAreaName}.`
+  };
+
+  const resourceArea: AdminAreaDraft = {
+    id: resourceAreaId,
+    name: values.resourceAreaName,
+    realmId,
+    zoneId,
+    description: `A simple resource stop for ${values.name}.`,
+    activities: [
+      { id: 'collect_reward', label: `Collect ${values.rewardItemName}`, kind: 'scripted', action: 'grantItem', params: { itemId: rewardItemId, quantity: 1, text: `You collect ${values.rewardItemName}.` } },
+      { id: 'return_start', label: `Return to ${values.startingAreaName}`, kind: 'travel', action: 'travel', destinationAreaId: startAreaId, params: { ambushChance: 0, ambushEnemyId: enemyId } }
+    ],
+    enemyPool: [{ enemyId, weight: 100 }],
+    encounterChance: 0.15,
+    requirements: [],
+    recommendedLevel: 1,
+    resourceItemIds: [rewardItemId],
+    connectedAreaIds: [startAreaId],
+    travelRoutes: [],
+    revealText: `You discover ${values.resourceAreaName}.`
+  };
+
+  const eventArea: AdminAreaDraft = {
+    id: eventAreaId,
+    name: values.eventAreaName,
+    realmId,
+    zoneId,
+    description: `A choice encounter location for ${values.name}.`,
+    activities: [
+      { id: 'test_event', label: 'Investigate the Marker', kind: 'event', action: 'event', eventId },
+      { id: 'return_start', label: `Return to ${values.startingAreaName}`, kind: 'travel', action: 'travel', destinationAreaId: startAreaId, params: { ambushChance: 0, ambushEnemyId: enemyId } }
+    ],
+    enemyPool: [{ enemyId, weight: 100 }],
+    encounterChance: 0.15,
+    requirements: [],
+    recommendedLevel: 1,
+    resourceItemIds: [rewardItemId],
+    connectedAreaIds: [startAreaId],
+    travelRoutes: [],
+    revealText: `You discover ${values.eventAreaName}.`
+  };
+
+  const areas = [startArea, resourceArea, eventArea].map((area) => {
+    const destinations = area.connectedAreaIds
+      .map((areaId) => [startArea, resourceArea, eventArea].find((entry) => entry.id === areaId))
+      .filter((entry): entry is AdminAreaDraft => !!entry);
+    return {
+      ...area,
+      travelRoutes: destinations.map((destination) => makeTravelRoute(area.id, destination, enemyId))
+    };
+  });
+
+  const event: AdminEventDraft = {
+    id: eventId,
+    name: `${values.name} Choice`,
+    areaId: eventAreaId,
+    activityId: 'test_event',
+    description: 'A compact branch used to verify event rewards and combat outcomes.',
+    choices: [
+      {
+        id: 'take_reward',
+        text: `Take ${values.rewardItemName}`,
+        outcome: {
+          text: `You secure ${values.rewardItemName}.`,
+          rewards: [{ itemId: rewardItemId, quantity: 1 }]
+        }
+      },
+      {
+        id: 'challenge_guardian',
+        text: `Challenge ${values.enemyName}`,
+        outcome: {
+          text: `${values.enemyName} steps forward.`,
+          rewards: [],
+          combat: { enemyId }
+        }
+      }
+    ]
+  };
+
+  const zone: AdminZoneDraft = {
+    id: zoneId,
+    realmId,
+    name: values.zoneName,
+    description: `A generated zone for ${values.name}.`,
+    areaIds: areas.map((area) => area.id),
+    startingAreaId: startAreaId
+  };
+
+  const realm: AdminRealmDraft = {
+    id: realmId,
+    name: values.realmName,
+    description: `A generated realm for ${values.name}.`,
+    zoneIds: [zoneId],
+    startingZoneId: zoneId,
+    startingAreaId: startAreaId
+  };
+
+  const expedition: AdminExpeditionDraft = {
+    id: expeditionId,
+    name: values.name,
+    description: `A generated expedition scaffold for ${values.realmName}.`,
+    realmId,
+    zoneId,
+    startingAreaId: startAreaId,
+    recommendedLevel: 1,
+    requirements: [],
+    travelPool: [
+      { id: 'safe_approach', label: 'Safe Approach', weight: 70, kind: 'message', message: `You make steady progress toward ${values.startingAreaName}.` },
+      { id: 'supply_find', label: 'Supply Find', weight: 20, kind: 'reward', message: `You find ${values.rewardItemName} beside the route.`, rewards: [{ itemId: rewardItemId, quantity: 1 }] },
+      { id: 'route_guardian', label: `${values.enemyName} Contact`, weight: 10, kind: 'combat', enemyId }
+    ],
+    rewardPreview: [{ itemId: rewardItemId, quantity: 1 }]
+  };
+
+  return { realm, zone, areas, event, enemy, rewardItem, expedition };
+}
+
+function addTestExpeditionToDrafts(drafts: AdminDrafts, result: TestExpeditionBuildResult): AdminDrafts {
+  return {
+    ...drafts,
+    realms: [...drafts.realms, result.realm],
+    zones: [...drafts.zones, result.zone],
+    areas: [...drafts.areas, ...result.areas],
+    events: [...drafts.events, result.event],
+    enemies: [...drafts.enemies, result.enemy],
+    items: [...drafts.items, result.rewardItem],
+    expeditions: [...drafts.expeditions, result.expedition],
+    updatedAt: Date.now()
+  };
+}
+
+function TestExpeditionWizard(props: {
+  drafts: AdminDrafts;
+  onCreate: (result: TestExpeditionBuildResult) => void;
+}) {
+  const [values, setValues] = useState<TestExpeditionWizardDraft>({
+    name: 'Test Expedition',
+    realmName: 'Test Realm',
+    zoneName: 'Test Zone',
+    startingAreaName: 'Test Camp',
+    resourceAreaName: 'Supply Field',
+    eventAreaName: 'Old Marker',
+    rewardItemName: 'Test Token',
+    enemyName: 'Training Sentinel'
+  });
+  const [preview, setPreview] = useState<TestExpeditionBuildResult | null>(null);
+
+  const updateValue = (key: keyof TestExpeditionWizardDraft, value: string) => {
+    setValues((current) => ({ ...current, [key]: value }));
+    setPreview(null);
+  };
+  const canCreate = Object.values(values).every((value) => value.trim().length > 0);
+  const nextPreview = preview ?? createTestExpedition(props.drafts, values);
+
+  return (
+    <div className="stack admin-builder">
+      <div className="card">
+        <strong>Test Expedition Wizard</strong>
+        <div className="muted">Create a playable scaffold with one realm, one zone, three linked areas, one event, one enemy, and one reward item.</div>
+      </div>
+      <div className="admin-builder-grid">
+        <div className="admin-list-pane">
+          <div className="card">
+            <strong>Generated Content</strong>
+            <div className="muted">The wizard appends new records and selects the starting area after creation.</div>
+          </div>
+          <div className="card">
+            <strong>{nextPreview.realm.name}</strong>
+            <div className="muted">{nextPreview.zone.name}</div>
+            <div className="chips">
+              <span className="chip">{nextPreview.areas.length} areas</span>
+              <span className="chip">1 event</span>
+              <span className="chip">1 enemy</span>
+              <span className="chip">1 item</span>
+            </div>
+          </div>
+          {nextPreview.areas.map((area) => (
+            <div key={area.id} className="card">
+              <strong>{area.name}</strong>
+              <div className="muted">{area.id}</div>
+              <div className="muted">{area.activities.length} activities · {area.travelRoutes.length} routes</div>
+            </div>
+          ))}
+        </div>
+        <div className="admin-editor">
+          <div className="stack">
+            <TextField label="Expedition Name" value={values.name} onChange={(value) => updateValue('name', value)} />
+            <TextField label="Realm Name" value={values.realmName} onChange={(value) => updateValue('realmName', value)} />
+            <TextField label="Zone Name" value={values.zoneName} onChange={(value) => updateValue('zoneName', value)} />
+            <TextField label="Starting Area" value={values.startingAreaName} onChange={(value) => updateValue('startingAreaName', value)} />
+            <TextField label="Resource Area" value={values.resourceAreaName} onChange={(value) => updateValue('resourceAreaName', value)} />
+            <TextField label="Event Area" value={values.eventAreaName} onChange={(value) => updateValue('eventAreaName', value)} />
+            <TextField label="Reward Item" value={values.rewardItemName} onChange={(value) => updateValue('rewardItemName', value)} />
+            <TextField label="Enemy" value={values.enemyName} onChange={(value) => updateValue('enemyName', value)} />
+            <div className="admin-actions">
+              <button className="secondary" type="button" onClick={() => setPreview(createTestExpedition(props.drafts, values))} disabled={!canCreate}>
+                Refresh Preview
+              </button>
+              <button className="primary" type="button" onClick={() => props.onCreate(createTestExpedition(props.drafts, values))} disabled={!canCreate}>
+                Create Test Expedition
+              </button>
+            </div>
+            <div className="card">
+              <strong>Preview JSON</strong>
+              <textarea className="admin-json" readOnly value={JSON.stringify(nextPreview, null, 2)} />
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
   );
 }
 
@@ -567,6 +1026,73 @@ function cloneDraft<T>(value: T | null): T | null {
   return value == null ? null : structuredClone(value);
 }
 
+function ExpeditionEditor(props: {
+  expedition: AdminExpeditionDraft;
+  realmOptions: { value: string; label: string }[];
+  zoneOptions: { value: string; label: string; realmId: string }[];
+  areaOptions: { value: string; label: string; zoneId: string }[];
+  onChange: (expedition: AdminExpeditionDraft) => void;
+}) {
+  const expedition = props.expedition;
+  const zoneOptions = props.zoneOptions.filter((zone) => !expedition.realmId || zone.realmId === expedition.realmId);
+  const areaOptions = props.areaOptions.filter((area) => !expedition.zoneId || area.zoneId === expedition.zoneId);
+  const handleRealmChange = (realmId: string) => {
+    const nextZone = props.zoneOptions.find((zone) => zone.realmId === realmId);
+    const nextArea = nextZone ? props.areaOptions.find((area) => area.zoneId === nextZone.value) : null;
+    props.onChange({
+      ...expedition,
+      realmId,
+      zoneId: nextZone?.value ?? '',
+      startingAreaId: nextArea?.value ?? ''
+    });
+  };
+  const handleZoneChange = (zoneId: string) => {
+    const nextZone = props.zoneOptions.find((zone) => zone.value === zoneId);
+    const nextArea = props.areaOptions.find((area) => area.zoneId === zoneId);
+    props.onChange({
+      ...expedition,
+      realmId: nextZone?.realmId ?? expedition.realmId,
+      zoneId,
+      startingAreaId: nextArea?.value ?? ''
+    });
+  };
+
+  return (
+    <div className="stack">
+      <h3>Expedition Details</h3>
+      <TextField label="Id" value={expedition.id} onChange={(value) => props.onChange({ ...expedition, id: value })} />
+      <TextField label="Name" value={expedition.name} onChange={(value) => props.onChange({ ...expedition, name: value })} />
+      <TextAreaField label="Description" value={expedition.description} onChange={(value) => props.onChange({ ...expedition, description: value })} />
+      <SelectField
+        label="Destination Realm"
+        value={expedition.realmId}
+        options={[{ value: '', label: 'Choose realm' }, ...props.realmOptions]}
+        onChange={handleRealmChange}
+      />
+      <SelectField
+        label="Destination Zone"
+        value={expedition.zoneId}
+        options={[{ value: '', label: 'Choose zone' }, ...zoneOptions]}
+        onChange={handleZoneChange}
+      />
+      <SelectField
+        label="Starting Area"
+        value={expedition.startingAreaId}
+        options={[{ value: '', label: 'Choose area' }, ...areaOptions]}
+        onChange={(value) => props.onChange({ ...expedition, startingAreaId: value })}
+      />
+      <NumberField
+        label="Recommended Level"
+        value={expedition.recommendedLevel}
+        onChange={(value) => props.onChange({ ...expedition, recommendedLevel: value ?? 1 })}
+      />
+      <JsonField label="Requirements" value={expedition.requirements} onChange={(value) => props.onChange({ ...expedition, requirements: value as AdminExpeditionDraft['requirements'] })} />
+      <JsonField label="Travel Pool" value={expedition.travelPool} onChange={(value) => props.onChange({ ...expedition, travelPool: value as AdminExpeditionDraft['travelPool'] })} />
+      <JsonField label="Reward Preview" value={expedition.rewardPreview} onChange={(value) => props.onChange({ ...expedition, rewardPreview: value as AdminExpeditionDraft['rewardPreview'] })} />
+    </div>
+  );
+}
+
 function ItemEditor(props: {
   item: AdminItemDraft;
   onChange: (item: AdminItemDraft) => void;
@@ -629,6 +1155,7 @@ function AreaEditor(props: {
   area: AdminAreaDraft;
   realmOptions: { value: string; label: string }[];
   zoneOptions: { value: string; label: string }[];
+  areaOptions: { value: string; label: string; zoneId: string }[];
   onChange: (area: AdminAreaDraft) => void;
 }) {
   const area = props.area;
@@ -668,8 +1195,153 @@ function AreaEditor(props: {
         onChange={(value) => props.onChange({ ...area, resourceItemIds: value.split(',').map((entry) => entry.trim()).filter(Boolean) })}
       />
       <TextAreaField label="Reveal Text" value={area.revealText} onChange={(value) => props.onChange({ ...area, revealText: value })} />
+      <TravelRouteEditor
+        routes={area.travelRoutes}
+        areaOptions={props.areaOptions.filter((option) => option.value !== area.id)}
+        onChange={(travelRoutes) => props.onChange({ ...area, travelRoutes })}
+      />
       <ActivityEditor activities={area.activities} onChange={(activities) => props.onChange({ ...area, activities })} />
       <JsonField label="Enemy Pool" value={area.enemyPool} onChange={(value) => props.onChange({ ...area, enemyPool: value as DraftAreaPoolEntry[] })} />
+    </div>
+  );
+}
+
+function createBlankTravelStyle(style: DraftTravelStyle['id'], destinationAreaName = 'destination'): DraftTravelStyle {
+  const labels: Record<DraftTravelStyle['id'], string> = {
+    careful: 'Travel Carefully',
+    normal: 'Travel Normally',
+    quick: 'Travel Quickly'
+  };
+  const basePools: Record<DraftTravelStyle['id'], DraftTravelRouteEvent[]> = {
+    careful: [
+      { id: 'safe_passage', label: 'Safe passage', weight: 70, kind: 'none' },
+      { id: 'watchful_note', label: 'Watchful note', weight: 20, kind: 'message', message: `You keep to the edge of the road toward ${destinationAreaName}.` },
+      { id: 'road_ambush', label: 'Road ambush', weight: 10, kind: 'combat', enemyId: 'wild_hog' }
+    ],
+    normal: [
+      { id: 'straight_path', label: 'Straight path', weight: 55, kind: 'none' },
+      { id: 'passing_thought', label: 'Passing thought', weight: 20, kind: 'message', message: `You keep moving toward ${destinationAreaName}.` },
+      { id: 'roadside_attack', label: 'Roadside attack', weight: 25, kind: 'combat', enemyId: 'wild_hog' }
+    ],
+    quick: [
+      { id: 'fast_route', label: 'Fast route', weight: 40, kind: 'none' },
+      { id: 'brisk_push', label: 'Brisk push', weight: 20, kind: 'message', message: `You hurry toward ${destinationAreaName}.` },
+      { id: 'open_ambush', label: 'Open ambush', weight: 40, kind: 'combat', enemyId: 'wild_hog' }
+    ]
+  };
+  return {
+    id: style,
+    label: labels[style],
+    steps: style === 'careful' ? 2 : 1,
+    eventPool: basePools[style]
+  };
+}
+
+function createBlankTravelRoute(existingIds: string[], areaOptions: { value: string; label: string; zoneId: string }[]): DraftTravelRoute {
+  const destination = areaOptions[0];
+  const destinationName = destination?.label ?? 'destination';
+  return {
+    id: `travel_route_${existingIds.length + 1}`,
+    destinationAreaId: destination?.value ?? '',
+    label: `Travel to ${destinationName}`,
+    styles: [
+      createBlankTravelStyle('careful', destinationName),
+      createBlankTravelStyle('normal', destinationName),
+      createBlankTravelStyle('quick', destinationName)
+    ]
+  };
+}
+
+function TravelRouteEditor(props: {
+  routes: DraftTravelRoute[];
+  areaOptions: { value: string; label: string; zoneId: string }[];
+  onChange: (routes: DraftTravelRoute[]) => void;
+}) {
+  const routes = props.routes ?? [];
+  const updateRoute = (index: number, updater: (current: DraftTravelRoute) => DraftTravelRoute) => {
+    props.onChange(routes.map((route, routeIndex) => (routeIndex === index ? updater(route) : route)));
+  };
+  const addRoute = () => {
+    props.onChange([...routes, createBlankTravelRoute(routes.map((route) => route.id), props.areaOptions)]);
+  };
+  const removeRoute = (index: number) => {
+    props.onChange(routes.filter((_, routeIndex) => routeIndex !== index));
+  };
+
+  return (
+    <div className="stack">
+      <div className="label-row">
+        <span>Travel Routes</span>
+        <button className="ghost compact" type="button" onClick={addRoute}>Add Route</button>
+      </div>
+      {routes.length > 0 ? (
+        routes.map((route, index) => {
+          const destinationName = props.areaOptions.find((option) => option.value === route.destinationAreaId)?.label ?? route.destinationAreaId ?? 'Unassigned';
+          return (
+            <div key={route.id} className="card activity-card">
+              <div className="label-row">
+                <strong>{route.label || route.id}</strong>
+                <button className="ghost compact" type="button" onClick={() => removeRoute(index)}>Remove</button>
+              </div>
+              <TextField label="Id" value={route.id} onChange={(value) => updateRoute(index, (current) => ({ ...current, id: value }))} />
+              <TextField label="Label" value={route.label} onChange={(value) => updateRoute(index, (current) => ({ ...current, label: value }))} />
+              <SelectField
+                label="Destination"
+                value={route.destinationAreaId}
+                options={[{ value: '', label: 'Choose area' }, ...props.areaOptions]}
+                onChange={(value) => {
+                  const destinationName = props.areaOptions.find((option) => option.value === value)?.label ?? value ?? 'destination';
+                  updateRoute(index, (current) => ({
+                    ...current,
+                    destinationAreaId: value,
+                    styles: current.styles.map((style) => createBlankTravelStyle(style.id, destinationName))
+                  }));
+                }}
+              />
+              <div className="muted">Destination: {destinationName}</div>
+              <TravelStyleEditor
+                styles={route.styles}
+                destinationName={destinationName}
+                onChange={(styles) => updateRoute(index, (current) => ({ ...current, styles }))}
+              />
+            </div>
+          );
+        })
+      ) : (
+        <div className="card">
+          <strong>No travel routes yet</strong>
+          <div className="muted">Add travel routes to turn area links into a short encounter chain.</div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+function TravelStyleEditor(props: {
+  styles: DraftTravelStyle[];
+  destinationName: string;
+  onChange: (styles: DraftTravelStyle[]) => void;
+}) {
+  const styles = props.styles?.length ? props.styles : (['careful', 'normal', 'quick'] as const).map((styleId) => createBlankTravelStyle(styleId, props.destinationName));
+  return (
+    <div className="stack">
+      {styles.map((style, index) => {
+        return (
+          <div key={style.id} className="card">
+            <strong>{style.label}</strong>
+            <NumberField
+              label="Steps"
+              value={style.steps}
+              onChange={(value) => props.onChange(styles.map((entry, entryIndex) => (entryIndex === index ? { ...entry, steps: value ?? entry.steps } : entry)))}
+            />
+            <JsonField
+              label="Weighted Events"
+              value={style.eventPool}
+              onChange={(value) => props.onChange(styles.map((entry, entryIndex) => (entryIndex === index ? { ...entry, eventPool: value as DraftTravelRouteEvent[] } : entry)))}
+            />
+          </div>
+        );
+      })}
     </div>
   );
 }
@@ -887,6 +1559,7 @@ function ExportSection(props: { exportData: ReturnType<typeof exportAdminDrafts>
       <ExportBlock label="Areas" value={props.exportData.areas} />
       <ExportBlock label="Recipes" value={props.exportData.recipes} />
       <ExportBlock label="Events" value={props.exportData.events} />
+      <ExportBlock label="Expeditions" value={props.exportData.expeditions} />
     </div>
   );
 }

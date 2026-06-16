@@ -7,6 +7,7 @@ import enemiesData from './data/enemies.json';
 import cropsData from './data/crops.json';
 import recipesData from './data/recipes.json';
 import eventsData from './data/events.json';
+import expeditionsData from './data/expeditions.json';
 import homesteadData from './data/homestead.json';
 
 export type Screen =
@@ -15,6 +16,7 @@ export type Screen =
   | 'tower'
   | 'zone-select'
   | 'area-select'
+  | 'travel'
   | 'exploration'
   | 'event'
   | 'combat'
@@ -75,6 +77,32 @@ export type AreaActivityDef = {
   params?: Record<string, string | number | boolean | null>;
 };
 
+export type TravelStyleId = 'careful' | 'normal' | 'quick';
+
+export type TravelRouteEventDef = {
+  id: string;
+  label: string;
+  weight: number;
+  kind: 'none' | 'message' | 'reward' | 'combat';
+  message?: string;
+  enemyId?: string;
+  rewards?: { itemId: string; quantity: number }[];
+};
+
+export type TravelStyleDef = {
+  id: TravelStyleId;
+  label: string;
+  steps: number;
+  eventPool: TravelRouteEventDef[];
+};
+
+export type TravelRouteDef = {
+  id: string;
+  destinationAreaId: string;
+  label: string;
+  styles: TravelStyleDef[];
+};
+
 export type AreaDef = {
   id: string;
   zoneId: string;
@@ -86,6 +114,7 @@ export type AreaDef = {
   encounterChance?: number;
   resourceItemIds: string[];
   connectedAreaIds: string[];
+  travelRoutes?: TravelRouteDef[];
   revealText?: string;
   activities?: AreaActivityDef[];
 };
@@ -152,6 +181,27 @@ export type EventChoiceDef = {
       enemyId: string;
     };
   };
+};
+
+export type RequirementDef = {
+  kind: 'level' | 'skill' | 'item' | 'tool' | 'building' | 'questFlag' | 'key' | 'artifact';
+  id?: string;
+  value?: number;
+  quantity?: number;
+  label?: string;
+};
+
+export type ExpeditionDef = {
+  id: string;
+  name: string;
+  description: string;
+  realmId: string;
+  zoneId: string;
+  startingAreaId: string;
+  recommendedLevel: number;
+  requirements: RequirementDef[];
+  travelPool: TravelRouteEventDef[];
+  rewardPreview: { itemId: string; quantity: number }[];
 };
 
 export type HomesteadDef = {
@@ -240,6 +290,10 @@ export type GameState = {
   selectedRealmId: string;
   selectedZoneId: string;
   selectedAreaId: string;
+  pendingTravel: {
+    fromAreaId: string;
+    toAreaId: string;
+  } | null;
   pendingEvent: EventState | null;
   combat: CombatState | null;
   player: PlayerState | null;
@@ -261,6 +315,7 @@ export type RuntimeContent = {
   crops?: CropDef[];
   recipes?: RecipeDef[];
   events?: EventDef[];
+  expeditions?: ExpeditionDef[];
   homestead?: HomesteadDef;
 };
 
@@ -273,6 +328,7 @@ export let enemies = enemiesData as unknown as EnemyDef[];
 export let crops = cropsData as CropDef[];
 export let recipes = recipesData as unknown as RecipeDef[];
 export let events = eventsData as unknown as EventDef[];
+export let expeditions = expeditionsData as unknown as ExpeditionDef[];
 export let homestead = homesteadData as HomesteadDef;
 
 export const STORAGE_KEY = 'tower-rpg-save-v1';
@@ -286,6 +342,7 @@ export let enemyById = new Map(enemies.map((item) => [item.id, item]));
 export let cropById = new Map(crops.map((item) => [item.id, item]));
 export let recipeById = new Map(recipes.map((item) => [item.id, item]));
 export let eventById = new Map(events.map((item) => [item.id, item]));
+export let expeditionById = new Map(expeditions.map((item) => [item.id, item]));
 
 function rebuildContentIndexes() {
   itemById = new Map(items.map((item) => [item.id, item]));
@@ -297,6 +354,7 @@ function rebuildContentIndexes() {
   cropById = new Map(crops.map((item) => [item.id, item]));
   recipeById = new Map(recipes.map((item) => [item.id, item]));
   eventById = new Map(events.map((item) => [item.id, item]));
+  expeditionById = new Map(expeditions.map((item) => [item.id, item]));
 }
 
 export function setRuntimeContent(content: RuntimeContent) {
@@ -309,6 +367,7 @@ export function setRuntimeContent(content: RuntimeContent) {
   if (content.crops) crops = content.crops;
   if (content.recipes) recipes = content.recipes;
   if (content.events) events = content.events;
+  if (content.expeditions) expeditions = content.expeditions;
   if (content.homestead) homestead = content.homestead;
   rebuildContentIndexes();
 }
@@ -321,6 +380,7 @@ export const getEnemy = (enemyId: string) => enemyById.get(enemyId);
 export const getCrop = (cropId: string) => cropById.get(cropId);
 export const getEvent = (eventId: string) => eventById.get(eventId);
 export const getRealm = (realmId: string) => realmById.get(realmId);
+export const getExpedition = (expeditionId: string) => expeditionById.get(expeditionId);
 
 export function getRealmStartLocation(realmId: string) {
   const realm = realmById.get(realmId) ?? realms[0] ?? null;
@@ -354,6 +414,7 @@ export function createNewGame(): GameState {
     selectedRealmId: realm?.id ?? '',
     selectedZoneId: zone?.id ?? '',
     selectedAreaId: area?.id ?? '',
+    pendingTravel: null,
     pendingEvent: null,
     combat: null,
     player: null,
@@ -537,6 +598,12 @@ export function normalizeGameState(state: GameState): GameState {
     selectedRealmId: realm?.id ?? '',
     selectedZoneId: selectedZone?.id ?? '',
     selectedAreaId: area?.id ?? '',
+    pendingTravel: state.pendingTravel
+      ? {
+          fromAreaId: areaById.get(state.pendingTravel.fromAreaId)?.id ?? '',
+          toAreaId: areaById.get(state.pendingTravel.toAreaId)?.id ?? ''
+        }
+      : null,
     returnBand: state.returnBand ?? {
       unlocked: !!state.player,
       cooldownSeconds: 300,
@@ -610,6 +677,57 @@ export function discoverArea(player: PlayerState, areaId: string) {
     ...player,
     discoveredAreaIds: [...player.discoveredAreaIds, areaId]
   };
+}
+
+export function getTravelRoutes(areaId: string): TravelRouteDef[] {
+  const area = getArea(areaId);
+  if (!area) return [];
+  if (area.travelRoutes?.length) return area.travelRoutes;
+  return area.connectedAreaIds.map((destinationAreaId) => {
+    const destinationName = getArea(destinationAreaId)?.name ?? destinationAreaId;
+    const styles: TravelStyleDef[] = [
+      {
+        id: 'careful',
+        label: 'Travel Carefully',
+        steps: 2,
+        eventPool: [
+          { id: 'quiet_path', label: 'Quiet path', weight: 70, kind: 'none' },
+          { id: 'watchful_step', label: 'Watchful step', weight: 20, kind: 'message', message: 'You move slowly and keep to cover.' },
+          { id: 'hostile_contact', label: 'Hostile contact', weight: 10, kind: 'combat', enemyId: 'wild_hog' }
+        ]
+      },
+      {
+        id: 'normal',
+        label: 'Travel Normally',
+        steps: 1,
+        eventPool: [
+          { id: 'clear_travel', label: 'Clear travel', weight: 55, kind: 'none' },
+          { id: 'uneasy_feeling', label: 'Uneasy feeling', weight: 20, kind: 'message', message: 'The road feels empty, but not safe.' },
+          { id: 'roadside_attack', label: 'Roadside attack', weight: 25, kind: 'combat', enemyId: 'wild_hog' }
+        ]
+      },
+      {
+        id: 'quick',
+        label: 'Travel Quickly',
+        steps: 1,
+        eventPool: [
+          { id: 'fast_pass', label: 'Fast pass', weight: 40, kind: 'none' },
+          { id: 'dust_and_noise', label: 'Dust and noise', weight: 20, kind: 'message', message: 'You push through the road at a brisk pace.' },
+          { id: 'open_ambush', label: 'Open ambush', weight: 40, kind: 'combat', enemyId: 'wild_hog' }
+        ]
+      }
+    ];
+    return {
+      id: `travel_${area.id}_to_${destinationAreaId}`,
+      destinationAreaId,
+      label: `Travel to ${destinationName}`,
+      styles
+    };
+  });
+}
+
+export function getTravelRoute(fromAreaId: string, toAreaId: string) {
+  return getTravelRoutes(fromAreaId).find((route) => route.destinationAreaId === toAreaId) ?? null;
 }
 
 export function getAreaEvents(areaId: string) {

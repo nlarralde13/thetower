@@ -49,6 +49,96 @@
     "connectedAreaIds": [
       "abandoned_campsite"
     ],
+    "travelRoutes": [
+      {
+        "id": "travel_quiet_pond_to_abandoned_campsite",
+        "destinationAreaId": "abandoned_campsite",
+        "label": "Travel to Abandoned Camp",
+        "styles": [
+          {
+            "id": "careful",
+            "label": "Travel Carefully",
+            "steps": 2,
+            "eventPool": [
+              {
+                "id": "safe_passage",
+                "label": "Safe passage",
+                "weight": 70,
+                "kind": "none"
+              },
+              {
+                "id": "watchful_note",
+                "label": "Watchful note",
+                "weight": 20,
+                "kind": "message",
+                "message": "You keep to the edge of the road toward Abandoned Camp."
+              },
+              {
+                "id": "road_ambush",
+                "label": "Road ambush",
+                "weight": 10,
+                "kind": "combat",
+                "enemyId": "wild_hog"
+              }
+            ]
+          },
+          {
+            "id": "normal",
+            "label": "Travel Normally",
+            "steps": 1,
+            "eventPool": [
+              {
+                "id": "straight_path",
+                "label": "Straight path",
+                "weight": 55,
+                "kind": "none"
+              },
+              {
+                "id": "passing_thought",
+                "label": "Passing thought",
+                "weight": 20,
+                "kind": "message",
+                "message": "You keep moving toward Abandoned Camp."
+              },
+              {
+                "id": "roadside_attack",
+                "label": "Roadside attack",
+                "weight": 25,
+                "kind": "combat",
+                "enemyId": "wild_hog"
+              }
+            ]
+          },
+          {
+            "id": "quick",
+            "label": "Travel Quickly",
+            "steps": 1,
+            "eventPool": [
+              {
+                "id": "fast_route",
+                "label": "Fast route",
+                "weight": 40,
+                "kind": "none"
+              },
+              {
+                "id": "brisk_push",
+                "label": "Brisk push",
+                "weight": 20,
+                "kind": "message",
+                "message": "You hurry toward Abandoned Camp."
+              },
+              {
+                "id": "open_ambush",
+                "label": "Open ambush",
+                "weight": 40,
+                "kind": "combat",
+                "enemyId": "wild_hog"
+              }
+            ]
+          }
+        ]
+      }
+    ],
     "revealText": "You spot a pond surrounded by reeds."
   },
   {
@@ -105,6 +195,96 @@
     "connectedAreaIds": [
       "abandoned_campsite"
     ],
+    "travelRoutes": [
+      {
+        "id": "travel_cluster_of_trees_to_abandoned_campsite",
+        "destinationAreaId": "abandoned_campsite",
+        "label": "Travel to Abandoned Camp",
+        "styles": [
+          {
+            "id": "careful",
+            "label": "Travel Carefully",
+            "steps": 2,
+            "eventPool": [
+              {
+                "id": "safe_passage",
+                "label": "Safe passage",
+                "weight": 70,
+                "kind": "none"
+              },
+              {
+                "id": "watchful_note",
+                "label": "Watchful note",
+                "weight": 20,
+                "kind": "message",
+                "message": "You keep to the edge of the road toward Abandoned Camp."
+              },
+              {
+                "id": "road_ambush",
+                "label": "Road ambush",
+                "weight": 10,
+                "kind": "combat",
+                "enemyId": "wild_hog"
+              }
+            ]
+          },
+          {
+            "id": "normal",
+            "label": "Travel Normally",
+            "steps": 1,
+            "eventPool": [
+              {
+                "id": "straight_path",
+                "label": "Straight path",
+                "weight": 55,
+                "kind": "none"
+              },
+              {
+                "id": "passing_thought",
+                "label": "Passing thought",
+                "weight": 20,
+                "kind": "message",
+                "message": "You keep moving toward Abandoned Camp."
+              },
+              {
+                "id": "roadside_attack",
+                "label": "Roadside attack",
+                "weight": 25,
+                "kind": "combat",
+                "enemyId": "wild_hog"
+              }
+            ]
+          },
+          {
+            "id": "quick",
+            "label": "Travel Quickly",
+            "steps": 1,
+            "eventPool": [
+              {
+                "id": "fast_route",
+                "label": "Fast route",
+                "weight": 40,
+                "kind": "none"
+              },
+              {
+                "id": "brisk_push",
+                "label": "Brisk push",
+                "weight": 20,
+                "kind": "message",
+                "message": "You hurry toward Abandoned Camp."
+              },
+              {
+                "id": "open_ambush",
+                "label": "Open ambush",
+                "weight": 40,
+                "kind": "combat",
+                "enemyId": "wild_hog"
+              }
+            ]
+          }
+        ]
+      }
+    ],
     "revealText": "You discover the tree line stretching across the grassland."
   },
   {
@@ -153,6 +333,96 @@
     ],
     "connectedAreaIds": [
       "abandoned_campsite"
+    ],
+    "travelRoutes": [
+      {
+        "id": "travel_field_of_grain_to_abandoned_campsite",
+        "destinationAreaId": "abandoned_campsite",
+        "label": "Travel to Abandoned Camp",
+        "styles": [
+          {
+            "id": "careful",
+            "label": "Travel Carefully",
+            "steps": 2,
+            "eventPool": [
+              {
+                "id": "safe_passage",
+                "label": "Safe passage",
+                "weight": 70,
+                "kind": "none"
+              },
+              {
+                "id": "watchful_note",
+                "label": "Watchful note",
+                "weight": 20,
+                "kind": "message",
+                "message": "You keep to the edge of the road toward Abandoned Camp."
+              },
+              {
+                "id": "road_ambush",
+                "label": "Road ambush",
+                "weight": 10,
+                "kind": "combat",
+                "enemyId": "wild_hog"
+              }
+            ]
+          },
+          {
+            "id": "normal",
+            "label": "Travel Normally",
+            "steps": 1,
+            "eventPool": [
+              {
+                "id": "straight_path",
+                "label": "Straight path",
+                "weight": 55,
+                "kind": "none"
+              },
+              {
+                "id": "passing_thought",
+                "label": "Passing thought",
+                "weight": 20,
+                "kind": "message",
+                "message": "You keep moving toward Abandoned Camp."
+              },
+              {
+                "id": "roadside_attack",
+                "label": "Roadside attack",
+                "weight": 25,
+                "kind": "combat",
+                "enemyId": "wild_hog"
+              }
+            ]
+          },
+          {
+            "id": "quick",
+            "label": "Travel Quickly",
+            "steps": 1,
+            "eventPool": [
+              {
+                "id": "fast_route",
+                "label": "Fast route",
+                "weight": 40,
+                "kind": "none"
+              },
+              {
+                "id": "brisk_push",
+                "label": "Brisk push",
+                "weight": 20,
+                "kind": "message",
+                "message": "You hurry toward Abandoned Camp."
+              },
+              {
+                "id": "open_ambush",
+                "label": "Open ambush",
+                "weight": 40,
+                "kind": "combat",
+                "enemyId": "wild_hog"
+              }
+            ]
+          }
+        ]
+      }
     ],
     "revealText": "You discover the grain fields rippling in the wind."
   },
@@ -248,6 +518,360 @@
       "field_of_grain",
       "broken_wagon"
     ],
+    "travelRoutes": [
+      {
+        "id": "travel_abandoned_campsite_to_cluster_of_trees",
+        "destinationAreaId": "cluster_of_trees",
+        "label": "Travel to Tree Line",
+        "styles": [
+          {
+            "id": "careful",
+            "label": "Travel Carefully",
+            "steps": 2,
+            "eventPool": [
+              {
+                "id": "safe_passage",
+                "label": "Safe passage",
+                "weight": 70,
+                "kind": "none"
+              },
+              {
+                "id": "watchful_note",
+                "label": "Watchful note",
+                "weight": 20,
+                "kind": "message",
+                "message": "You keep to the edge of the road toward Tree Line."
+              },
+              {
+                "id": "road_ambush",
+                "label": "Road ambush",
+                "weight": 10,
+                "kind": "combat",
+                "enemyId": "wild_hog"
+              }
+            ]
+          },
+          {
+            "id": "normal",
+            "label": "Travel Normally",
+            "steps": 1,
+            "eventPool": [
+              {
+                "id": "straight_path",
+                "label": "Straight path",
+                "weight": 55,
+                "kind": "none"
+              },
+              {
+                "id": "passing_thought",
+                "label": "Passing thought",
+                "weight": 20,
+                "kind": "message",
+                "message": "You keep moving toward Tree Line."
+              },
+              {
+                "id": "roadside_attack",
+                "label": "Roadside attack",
+                "weight": 25,
+                "kind": "combat",
+                "enemyId": "wild_hog"
+              }
+            ]
+          },
+          {
+            "id": "quick",
+            "label": "Travel Quickly",
+            "steps": 1,
+            "eventPool": [
+              {
+                "id": "fast_route",
+                "label": "Fast route",
+                "weight": 40,
+                "kind": "none"
+              },
+              {
+                "id": "brisk_push",
+                "label": "Brisk push",
+                "weight": 20,
+                "kind": "message",
+                "message": "You hurry toward Tree Line."
+              },
+              {
+                "id": "open_ambush",
+                "label": "Open ambush",
+                "weight": 40,
+                "kind": "combat",
+                "enemyId": "wild_hog"
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "id": "travel_abandoned_campsite_to_quiet_pond",
+        "destinationAreaId": "quiet_pond",
+        "label": "Travel to Pond",
+        "styles": [
+          {
+            "id": "careful",
+            "label": "Travel Carefully",
+            "steps": 2,
+            "eventPool": [
+              {
+                "id": "safe_passage",
+                "label": "Safe passage",
+                "weight": 70,
+                "kind": "none"
+              },
+              {
+                "id": "watchful_note",
+                "label": "Watchful note",
+                "weight": 20,
+                "kind": "message",
+                "message": "You keep to the edge of the road toward Pond."
+              },
+              {
+                "id": "road_ambush",
+                "label": "Road ambush",
+                "weight": 10,
+                "kind": "combat",
+                "enemyId": "wild_hog"
+              }
+            ]
+          },
+          {
+            "id": "normal",
+            "label": "Travel Normally",
+            "steps": 1,
+            "eventPool": [
+              {
+                "id": "straight_path",
+                "label": "Straight path",
+                "weight": 55,
+                "kind": "none"
+              },
+              {
+                "id": "passing_thought",
+                "label": "Passing thought",
+                "weight": 20,
+                "kind": "message",
+                "message": "You keep moving toward Pond."
+              },
+              {
+                "id": "roadside_attack",
+                "label": "Roadside attack",
+                "weight": 25,
+                "kind": "combat",
+                "enemyId": "wild_hog"
+              }
+            ]
+          },
+          {
+            "id": "quick",
+            "label": "Travel Quickly",
+            "steps": 1,
+            "eventPool": [
+              {
+                "id": "fast_route",
+                "label": "Fast route",
+                "weight": 40,
+                "kind": "none"
+              },
+              {
+                "id": "brisk_push",
+                "label": "Brisk push",
+                "weight": 20,
+                "kind": "message",
+                "message": "You hurry toward Pond."
+              },
+              {
+                "id": "open_ambush",
+                "label": "Open ambush",
+                "weight": 40,
+                "kind": "combat",
+                "enemyId": "wild_hog"
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "id": "travel_abandoned_campsite_to_field_of_grain",
+        "destinationAreaId": "field_of_grain",
+        "label": "Travel to Grain Fields",
+        "styles": [
+          {
+            "id": "careful",
+            "label": "Travel Carefully",
+            "steps": 2,
+            "eventPool": [
+              {
+                "id": "safe_passage",
+                "label": "Safe passage",
+                "weight": 70,
+                "kind": "none"
+              },
+              {
+                "id": "watchful_note",
+                "label": "Watchful note",
+                "weight": 20,
+                "kind": "message",
+                "message": "You keep to the edge of the road toward Grain Fields."
+              },
+              {
+                "id": "road_ambush",
+                "label": "Road ambush",
+                "weight": 10,
+                "kind": "combat",
+                "enemyId": "wild_hog"
+              }
+            ]
+          },
+          {
+            "id": "normal",
+            "label": "Travel Normally",
+            "steps": 1,
+            "eventPool": [
+              {
+                "id": "straight_path",
+                "label": "Straight path",
+                "weight": 55,
+                "kind": "none"
+              },
+              {
+                "id": "passing_thought",
+                "label": "Passing thought",
+                "weight": 20,
+                "kind": "message",
+                "message": "You keep moving toward Grain Fields."
+              },
+              {
+                "id": "roadside_attack",
+                "label": "Roadside attack",
+                "weight": 25,
+                "kind": "combat",
+                "enemyId": "wild_hog"
+              }
+            ]
+          },
+          {
+            "id": "quick",
+            "label": "Travel Quickly",
+            "steps": 1,
+            "eventPool": [
+              {
+                "id": "fast_route",
+                "label": "Fast route",
+                "weight": 40,
+                "kind": "none"
+              },
+              {
+                "id": "brisk_push",
+                "label": "Brisk push",
+                "weight": 20,
+                "kind": "message",
+                "message": "You hurry toward Grain Fields."
+              },
+              {
+                "id": "open_ambush",
+                "label": "Open ambush",
+                "weight": 40,
+                "kind": "combat",
+                "enemyId": "wild_hog"
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "id": "travel_abandoned_campsite_to_broken_wagon",
+        "destinationAreaId": "broken_wagon",
+        "label": "Travel to Mounded Hills",
+        "styles": [
+          {
+            "id": "careful",
+            "label": "Travel Carefully",
+            "steps": 2,
+            "eventPool": [
+              {
+                "id": "safe_passage",
+                "label": "Safe passage",
+                "weight": 70,
+                "kind": "none"
+              },
+              {
+                "id": "watchful_note",
+                "label": "Watchful note",
+                "weight": 20,
+                "kind": "message",
+                "message": "You keep to the edge of the road toward Mounded Hills."
+              },
+              {
+                "id": "road_ambush",
+                "label": "Road ambush",
+                "weight": 10,
+                "kind": "combat",
+                "enemyId": "wild_hog"
+              }
+            ]
+          },
+          {
+            "id": "normal",
+            "label": "Travel Normally",
+            "steps": 1,
+            "eventPool": [
+              {
+                "id": "straight_path",
+                "label": "Straight path",
+                "weight": 55,
+                "kind": "none"
+              },
+              {
+                "id": "passing_thought",
+                "label": "Passing thought",
+                "weight": 20,
+                "kind": "message",
+                "message": "You keep moving toward Mounded Hills."
+              },
+              {
+                "id": "roadside_attack",
+                "label": "Roadside attack",
+                "weight": 25,
+                "kind": "combat",
+                "enemyId": "wild_hog"
+              }
+            ]
+          },
+          {
+            "id": "quick",
+            "label": "Travel Quickly",
+            "steps": 1,
+            "eventPool": [
+              {
+                "id": "fast_route",
+                "label": "Fast route",
+                "weight": 40,
+                "kind": "none"
+              },
+              {
+                "id": "brisk_push",
+                "label": "Brisk push",
+                "weight": 20,
+                "kind": "message",
+                "message": "You hurry toward Mounded Hills."
+              },
+              {
+                "id": "open_ambush",
+                "label": "Open ambush",
+                "weight": 40,
+                "kind": "combat",
+                "enemyId": "wild_hog"
+              }
+            ]
+          }
+        ]
+      }
+    ],
     "revealText": "You find an abandoned camp with a cold fire ring."
   },
   {
@@ -293,13 +917,103 @@
     "connectedAreaIds": [
       "abandoned_campsite"
     ],
+    "travelRoutes": [
+      {
+        "id": "travel_broken_wagon_to_abandoned_campsite",
+        "destinationAreaId": "abandoned_campsite",
+        "label": "Travel to Abandoned Camp",
+        "styles": [
+          {
+            "id": "careful",
+            "label": "Travel Carefully",
+            "steps": 2,
+            "eventPool": [
+              {
+                "id": "safe_passage",
+                "label": "Safe passage",
+                "weight": 70,
+                "kind": "none"
+              },
+              {
+                "id": "watchful_note",
+                "label": "Watchful note",
+                "weight": 20,
+                "kind": "message",
+                "message": "You keep to the edge of the road toward Abandoned Camp."
+              },
+              {
+                "id": "road_ambush",
+                "label": "Road ambush",
+                "weight": 10,
+                "kind": "combat",
+                "enemyId": "wild_hog"
+              }
+            ]
+          },
+          {
+            "id": "normal",
+            "label": "Travel Normally",
+            "steps": 1,
+            "eventPool": [
+              {
+                "id": "straight_path",
+                "label": "Straight path",
+                "weight": 55,
+                "kind": "none"
+              },
+              {
+                "id": "passing_thought",
+                "label": "Passing thought",
+                "weight": 20,
+                "kind": "message",
+                "message": "You keep moving toward Abandoned Camp."
+              },
+              {
+                "id": "roadside_attack",
+                "label": "Roadside attack",
+                "weight": 25,
+                "kind": "combat",
+                "enemyId": "wild_hog"
+              }
+            ]
+          },
+          {
+            "id": "quick",
+            "label": "Travel Quickly",
+            "steps": 1,
+            "eventPool": [
+              {
+                "id": "fast_route",
+                "label": "Fast route",
+                "weight": 40,
+                "kind": "none"
+              },
+              {
+                "id": "brisk_push",
+                "label": "Brisk push",
+                "weight": 20,
+                "kind": "message",
+                "message": "You hurry toward Abandoned Camp."
+              },
+              {
+                "id": "open_ambush",
+                "label": "Open ambush",
+                "weight": 40,
+                "kind": "combat",
+                "enemyId": "wild_hog"
+              }
+            ]
+          }
+        ]
+      }
+    ],
     "revealText": "You spot low mounded hills rising from the plains."
   },
   {
     "id": "whispering_gardens",
     "name": "Whispering Gardens",
-    "realmId": "",
-    "zoneId": "",
+    "realmId": "verdant_expanse",
+    "zoneId": "bounding_plains",
     "description": "Overgrown terraces where flowers murmur when no breeze is blowing.",
     "activities": [
       {
@@ -342,13 +1056,14 @@
       "gardeners_journal_page"
     ],
     "connectedAreaIds": [],
+    "travelRoutes": [],
     "revealText": ""
   },
   {
     "id": "deep_woods",
     "name": "The Deep Woods",
-    "realmId": "",
-    "zoneId": "",
+    "realmId": "verdant_expanse",
+    "zoneId": "bounding_plains",
     "description": "A dense ancient forest where the trails shift beneath a dark canopy.",
     "activities": [
       {
@@ -395,6 +1110,95 @@
       "old_rangers_map"
     ],
     "connectedAreaIds": [],
+    "travelRoutes": [],
     "revealText": ""
+  },
+  {
+    "id": "test_expedition_field",
+    "name": "Supply Field",
+    "realmId": "test_expedition_realm",
+    "zoneId": "test_expedition_zone",
+    "description": "A simple resource stop for Test Expedition.",
+    "activities": [
+      {
+        "id": "collect_reward",
+        "label": "Collect Test Token",
+        "kind": "scripted",
+        "action": "grantItem",
+        "params": {
+          "itemId": "test_expedition_token",
+          "quantity": 1,
+          "text": "You collect Test Token."
+        }
+      },
+      {
+        "id": "return_start",
+        "label": "Return to Test Camp",
+        "kind": "travel",
+        "action": "travel",
+        "destinationAreaId": "",
+        "params": {
+          "ambushChance": 0,
+          "ambushEnemyId": "test_expedition_sentinel"
+        }
+      }
+    ],
+    "enemyPool": [
+      {
+        "enemyId": "test_expedition_sentinel",
+        "weight": 100
+      }
+    ],
+    "encounterChance": 0.15,
+    "requirements": [],
+    "recommendedLevel": 1,
+    "resourceItemIds": [
+      "test_expedition_token"
+    ],
+    "connectedAreaIds": [],
+    "travelRoutes": [],
+    "revealText": "You discover Supply Field."
+  },
+  {
+    "id": "test_expedition_ruins",
+    "name": "Old Marker",
+    "realmId": "test_expedition_realm",
+    "zoneId": "test_expedition_zone",
+    "description": "A choice encounter location for Test Expedition.",
+    "activities": [
+      {
+        "id": "test_event",
+        "label": "Investigate the Marker",
+        "kind": "event",
+        "action": "event",
+        "eventId": "test_expedition_choice"
+      },
+      {
+        "id": "return_start",
+        "label": "Return to Test Camp",
+        "kind": "travel",
+        "action": "travel",
+        "destinationAreaId": "",
+        "params": {
+          "ambushChance": 0,
+          "ambushEnemyId": "test_expedition_sentinel"
+        }
+      }
+    ],
+    "enemyPool": [
+      {
+        "enemyId": "test_expedition_sentinel",
+        "weight": 100
+      }
+    ],
+    "encounterChance": 0.15,
+    "requirements": [],
+    "recommendedLevel": 1,
+    "resourceItemIds": [
+      "test_expedition_token"
+    ],
+    "connectedAreaIds": [],
+    "travelRoutes": [],
+    "revealText": "You discover Old Marker."
   }
 ]
